@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import { connectToDB }from './db/db.js';
 import sessionConfig from './middlewares/sessionConfig.js';
 import userRoutes from "./routes/user.routes.js";
+import captainRoutes from "./routes/captain.routes.js";
 
 const app = express();
 connectToDB();
@@ -21,7 +22,7 @@ app.use(express.static("public"));
 sessionConfig(app);
 
 app.use('/users', userRoutes);
-
+app.use('/captains', captainRoutes);
 
 app.get('/', (req, res) => {    
     res.send('Hello World!');
