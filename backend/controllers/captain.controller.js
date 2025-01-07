@@ -18,19 +18,22 @@ export const registerCaptain = async (req, res) => {
     const existingCaptain = await findCaptainByEmail(email);
 
     if (existingCaptain) {
-      res.send("Email already exists. Try logging in.");
+      res.status(400).json({ errors: [{ msg: "Captain account already exists. Try logging in" }] });
     } else {
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       const captain = await createCaptain(firstname, lastname, email, hashedPassword, color, plate, capacity, vehicleType);
 
       req.login(captain, (err) => {
         if (err) console.error(err);
-        res.status(201).json({ captain: captain });
+        const firstname = captain.firstname;
+        const email = captain.email;
+
+        res.status(201).json({ captain: {firstname, email} });
       });
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error.");
+    res.status(500).json({ errors: [{ msg: "Server error." }] });
   }
 };
 
@@ -45,35 +48,38 @@ export const loginCaptain = async (req, res, next) => {
     passport.authenticate("captain-local", (err, captain, info) => {
       if (err) {
         console.error(err);
-        return res.status(500).send("Server error.");
+        return res.status(500).json({ errors: [{ msg: "Server error." }] });
       }
   
       if (!captain) {
-        return res.status(401).send(info.message || "Invalid email or password.");
+        return res.status(401).json({ errors: [{ msg: "Invalid email or password." }] });
       }
   
       req.login(captain, (err) => {
         if (err) {
           console.error(err);
-          return res.status(500).send("Login failed.");
+          return res.status(500).json({ errors: [{ msg: "Server error." }] });
         }
+
+        const firstname = captain.firstname;
+        const email = captain.email;
   
-        return res.status(200).json({ captain });
+        return res.status(200).json({ captain : {firstname, email} });
       });
     })(req, res, next);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error.");
+    res.status(500).json({ errors: [{ msg: "Server error." }] });
   }
 }
 
 export const logoutCaptain = (req, res, next) => {
   req.logout((err) => {
     if (err) {
-      console.error(err);
-      return next(err); // Pass the error to the error-handling middleware
+      return res.status(500).json({ errors: [{ msg: "Logout failed "}] });
+      // return next(err); // Pass the error to the error-handling middleware
     }
-    res.status(200).send("Logged out successfully.");
+    res.status(200).json({ message: "Logged out successfully." });
   });
 };
 

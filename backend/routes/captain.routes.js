@@ -24,7 +24,7 @@ router.post("/login", [
     loginCaptain
 );
 
-router.get("/logout", isAuthenticated, logoutCaptain);
+router.get("/logout", logoutCaptain);
 
 router.get("/profile", isAuthenticated, getCaptainProfile);
 

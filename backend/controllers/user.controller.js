@@ -18,14 +18,14 @@ export const registerUser = async (req, res) => {
     const existingUser = await findUserByEmail(email);
 
     if (existingUser) {
-      res.send("Email already exists. Try logging in.");
+      return res.status(400).json({ errors: [{ msg: "Email already exists. Try logging in." }] });
     } else {
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       const user = await createUser(firstname, lastname, email, hashedPassword);
 
       req.login(user, (err) => {
         if (err) console.error(err);
-        res.status(201).json({ user: user });
+        res.status(201).json({ user: { firstname, lastname, email } });
       });
     }
   } catch (err) {
@@ -49,31 +49,33 @@ export const loginUser = async (req, res, next) => {
       }
   
       if (!user) {
-        return res.status(401).send(info.message || "Invalid email or password.");
+        return res.status(401).json({ errors: [{ msg: info.message || "Invalid email or password." }] });
       }
   
       req.login(user, (err) => {
         if (err) {
           console.error(err);
-          return res.status(500).send("Login failed.");
+          return res.status(500).json({ errors: [{ msg: "Server error." }] });
         }
 
-        // res.cookie("user", user);
+        const firstname = user.firstname;
+        const lastname = user.lastname;
+        const email = user.email;
   
-        return res.status(200).json({ user });
+        return res.status(200).json({ user: { firstname, lastname, email } });
       });
     })(req, res, next);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error.");
+    return res.status(500).json({ errors: [{ msg: "Server error." }] });
   }
 }
 
 export const logoutUser = (req, res, next) => {
   req.logout((err) => {
     if (err) {
-      console.error(err);
-      return next(err); // Pass the error to the error-handling middleware
+      return res.status(500).json({ errors: [{ msg: "Logout failed "}] });
+      // return next(err); // Pass the error to the error-handling middleware
     }
     res.status(200).send("Logged out successfully.");
   });

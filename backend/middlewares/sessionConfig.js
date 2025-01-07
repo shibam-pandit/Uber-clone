@@ -12,7 +12,12 @@ export default (app) => {
       secret: process.env.SESSION_SECRET, // Use environment variable for security
       resave: false,
       saveUninitialized: true,
-      cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
+      cookie: { 
+        maxAge: 1000 * 60 * 60 * 24 , // 24 hours
+        httpOnly: true,    // Prevent JavaScript access to cookies
+        secure: false,      // does not Ensure cookies are sent only over HTTPS
+        sameSite: "none"
+      }, 
     })
   );
 

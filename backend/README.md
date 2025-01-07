@@ -59,7 +59,7 @@ Authenticates user credentials and returns the user object on success. Sets a se
 Logs out the authenticated user. Requires the session cookie to be sent.
 
 ### Request
-• Method: POST  
+• Method: GET  
 • Path: `/users/logout`
 
 ### Response

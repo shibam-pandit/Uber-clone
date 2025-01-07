@@ -72,7 +72,7 @@ export const isAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/login");
+  res.status(401).json({ error: "User not authenticated. Please log in." });
 };
 
 // Middleware to ensure authentication (for captains)
@@ -80,7 +80,7 @@ export const isCaptainAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/captain-login");
+  res.status(401).json({ error: "User not authenticated. Please log in." });
 };
 
 export default passport;
