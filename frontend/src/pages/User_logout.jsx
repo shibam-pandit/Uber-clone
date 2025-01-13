@@ -1,7 +1,7 @@
 import React, { useEffect, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserDataContext } from "../context/userContext";
+import { UserDataContext } from "../context/UserContext";
 
 function UserLogout() {
   const { setUser } = useContext(UserDataContext);
@@ -18,7 +18,10 @@ function UserLogout() {
           navigate("/login"); // Navigate to login after successful logout
         }
       } catch (error) {
-        console.error("Error logging out:", error);
+        localStorage.removeItem("user");
+        setUser(null); // Clear user data in context
+        navigate("/login"); // Navigate to login after successful logout
+        console.log(error.response?.data?.errors?.[0]?.msg || "Logout failed.");
       }
     };
 

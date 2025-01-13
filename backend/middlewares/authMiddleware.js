@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { findUserByEmail, findUserById } from "../models/user.model.js";
 import { findCaptainByEmail, findCaptainById } from "../models/captain.model.js";
 
+// Local strategy for users
 passport.use(
   "local",
   new LocalStrategy(
@@ -14,7 +15,11 @@ passport.use(
         if (!user) return cb(null, false, { message: "Invalid email or password" });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        return isMatch ? cb(null, user) : cb(null, false, { message: "Invalid email or password" });
+        if (isMatch) {
+          user.type = "user"; // Add type for serialization
+          return cb(null, user);
+        }
+        return cb(null, false, { message: "Invalid email or password" });
       } catch (err) {
         return cb(err);
       }
@@ -22,6 +27,7 @@ passport.use(
   )
 );
 
+// Local strategy for captains
 passport.use(
   "captain-local",
   new LocalStrategy(
@@ -32,7 +38,11 @@ passport.use(
         if (!captain) return cb(null, false, { message: "Invalid email or password" });
 
         const isMatch = await bcrypt.compare(password, captain.password);
-        return isMatch ? cb(null, captain) : cb(null, false, { message: "Invalid email or password" });
+        if (isMatch) {
+          captain.type = "captain"; // Add type for serialization
+          return cb(null, captain);
+        }
+        return cb(null, false, { message: "Invalid email or password" });
       } catch (err) {
         return cb(err);
       }
@@ -40,47 +50,40 @@ passport.use(
   )
 );
 
-passport.serializeUser((user, cb) => {
-  cb(null, user.id);
+// Unified serialization
+passport.serializeUser((entity, cb) => {
+  cb(null, { id: entity.id, type: entity.type }); // Store both ID and type
 });
 
-// Serialize captain (for storing captain data in the session)
-passport.serializeUser((captain, cb) => {
-  cb(null, captain.id); // Store captain ID in the session for "captain-local"
-});
-
-passport.deserializeUser(async (id, cb) => {
+// Unified deserialization
+passport.deserializeUser(async ({ id, type }, cb) => {
   try {
-    const user = await findUserById(id);
-    cb(null, user);
+    if (type === "user") {
+      const user = await findUserById(id);
+      return cb(null, user);
+    } else if (type === "captain") {
+      const captain = await findCaptainById(id);
+      return cb(null, captain);
+    }
+    cb(new Error("Invalid type during deserialization"));
   } catch (err) {
     cb(err);
   }
 });
 
-// Deserialize captain (for retrieving captain data from the session)
-passport.deserializeUser(async (id, cb) => {
-  try {
-    const captain = await findCaptainById(id);
-    cb(null, captain);
-  } catch (err) {
-    cb(err);
-  }
-});
-
+// Authentication middleware
 export const isAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) {
+  if (req.isAuthenticated() && req.user.type === "user") {
     return next();
   }
   res.status(401).json({ error: "User not authenticated. Please log in." });
 };
 
-// Middleware to ensure authentication (for captains)
 export const isCaptainAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) {
+  if (req.isAuthenticated() && req.user.type === "captain") {
     return next();
   }
-  res.status(401).json({ error: "User not authenticated. Please log in." });
+  res.status(401).json({ error: "Captain not authenticated. Please log in." });
 };
 
 export default passport;

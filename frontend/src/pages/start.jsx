@@ -15,12 +15,12 @@ function Start() {
                     <nav>
                     <Link 
                     to="/login"
-                    className="m-1 p-3 bg-[#002D74] text-white rounded-xl hover:scale-105 duration-300 hover:bg-[#206ab1] font-medium">
+                    className="m-2 p-3 bg-[#002D74] text-white rounded-xl hover:scale-105 duration-300 hover:bg-[#206ab1] font-medium">
                         User Login
                     </Link>
                     <Link 
                     to="/captain-login"
-                    className="m-1 p-3 bg-[#002D74] text-white rounded-xl hover:scale-105 duration-300 hover:bg-[#206ab1] font-medium">
+                    className="m-2 p-3 bg-[#002D74] text-white rounded-xl hover:scale-105 duration-300 hover:bg-[#206ab1] font-medium">
                         Driver Login
                     </Link>
                     </nav>

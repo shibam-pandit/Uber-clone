@@ -12,7 +12,7 @@ const Navbar = () => {
 
   const linkStyle = (path) =>
     activeLink === path
-      ? 'text-white bg-blue-800 px-4 py-2 rounded-lg font-semibold'
+      ? 'text-white bg-blue-900 px-4 py-2 rounded-lg font-semibold'
       : 'text-gray-900 hover:bg-blue-400 hover:text-white px-4 py-2 rounded-lg font-semibold';
 
   return (
@@ -67,8 +67,8 @@ const Navbar = () => {
             )}
           </button>
           {isMobileMenuOpen && (
-            <div className="absolute right-0 top-full w-auto min-w-[110px] bg-[#dfa674] bg-opacity-70 border border-black shadow-lg">
-              <ul className="flex flex-col divide-y divide-black">
+            <div className="absolute right-0 top-full w-auto min-w-[110px] bg-[#dfa674] bg-opacity-70 border border-black shadow-lg" style={{ zIndex: 50 }}>
+              <ul className="flex flex-col divide-y divide-black z-20">
                 <li>
                   <Link
                     to="/home"

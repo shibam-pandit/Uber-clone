@@ -9,6 +9,7 @@ export default (app) => {
   // Configure session
   app.use(
     session({
+      name: "connect.sid", // Name of the cookie
       secret: process.env.SESSION_SECRET, // Use environment variable for security
       resave: false,
       saveUninitialized: true,

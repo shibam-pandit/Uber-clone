@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useContext, useEffect } from "react";
-import { UserDataContext } from "../context/userContext";
+import { UserDataContext } from "../context/UserContext";
 
 const UserProtectWrapper = ({ children }) => {
     const { user, loading } = useContext(UserDataContext);
