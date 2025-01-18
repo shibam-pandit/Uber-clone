@@ -1,53 +1,116 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import 'remixicon/fonts/remixicon.css';
+import FinishRide from "../captain-components/FinishRide";
+import OTPInput from "../captain-components/OTPInput";
 
-function CaptainRiding({ destination, directions }) {
-    const [panelOpen, setPanelOpen] = useState(false);
+function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unknown Destination", directions = [] }) {
+    const [panelOpen, setPanelOpen] = useState(true); // Panel open by default for small screens
+    const [finishRideShow, setFinishRideShow] = useState(false);
+    const [otpVerified, setOtpVerified] = useState(false); // State to track OTP verification
+    const [correctOTP] = useState("123456"); // Mock correct OTP
 
     const togglePanel = () => setPanelOpen(!panelOpen);
 
     return (
         <div className="relative h-screen w-full">
-            {/* Map Section */}
-            <MapContainer
-                center={[51.505, -0.09]} // Replace with dynamic coordinates
-                zoom={13}
-                className="h-full w-full"
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-                />
-            </MapContainer>
+            {/* Large Screen Layout */}
+            <div className="hidden lg:flex min-h-screen">
+                {/* Map Section */}
+                <div className="w-2/3">
+                    <MapContainer
+                        center={[51.505, -0.09]} // Replace with dynamic coordinates
+                        zoom={13}
+                        className="h-full w-full"
+                    >
+                        <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                        />
+                    </MapContainer>
+                </div>
 
-            {/* Bottom/Side Panel */}
-            <AnimatePresence>
+                {/* Panel Section */}
+                <div className="w-1/3 p-8 bg-gradient-to-r from-[#052a55] to-[#13123fd7] text-white overflow-y-auto">
+                    {!finishRideShow ? (
+                        !otpVerified ? (
+                            <>
+                                <h2 className="text-2xl font-bold mb-[10%] p-2 border-b-2 border-gray-300">
+                                    Pickup Location:<br /> <span className="text-yellow-400">{pickupLocation}</span>
+                                </h2>
+                                {/* // OTP Verification Section */}
+                                <div className="flex flex-col items-center">
+                                    <h2 className="text-2xl font-bold text-gray-100 mb-4">Verify OTP</h2>
+                                    <OTPInput
+                                        correctOTP={correctOTP}
+                                        onSuccess={() => setOtpVerified(true)} // Update OTP verification state
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            // Ride Information Section
+                            <div>
+                                <h2 className="text-2xl font-bold mb-[10%] p-2 border-b-2 border-gray-300">
+                                    Drop Location:<br /> <span className="text-yellow-400 mt-3">{destination}</span>
+                                </h2>
+                                <ul className="list-disc list-inside space-y-2 text-gray-300">
+                                    {directions.map((instruction, index) => (
+                                        <li key={index}>{instruction}</li>
+                                    ))}
+                                </ul>
+                                <button
+                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-6 w-full"
+                                    onClick={() => setFinishRideShow(true)}
+                                >
+                                    Complete Ride
+                                </button>
+                            </div>
+                        )
+                    ) : (
+                        // FinishRide Section (Full Panel)
+                        <FinishRide />
+                    )}
+                </div>
+            </div>
+
+            {/* Small Screen Layout */}
+            <div className="lg:hidden relative h-screen w-full">
+                {/* Map Section */}
+                <MapContainer
+                    center={[51.505, -0.09]} // Replace with dynamic coordinates
+                    zoom={13}
+                    className={`h-screen w-full`}
+                    style={{ zIndex: 1 }} // Ensure map stays behind the panel
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                    />
+                </MapContainer>
+
+                {/* Panel */}
                 <motion.div
-                    className={`fixed z-50 bg-gray-900 text-white shadow-lg p-4 ${
-                        panelOpen
-                            ? "h-[90%] w-full md:w-1/3 bottom-0 md:right-0 md:bottom-auto"
-                            : "h-16 w-full md:w-1/3 bottom-0 md:right-0 md:bottom-auto"
-                    } md:h-full overflow-y-auto transition-all`}
-                    initial={{ y: panelOpen ? "100%" : 0 }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className={`absolute bottom-0 w-full bg-gradient-to-r from-[#052a55] to-[#13123fd7] text-white p-4 ${panelOpen ? "h-[70%]" : "h-16"} overflow-y-auto`}
+                    style={{ zIndex: 50 }} // Ensure panel z-index is higher
+                    initial={{ y: "100%" }}
+                    animate={{ y: panelOpen ? "0%" : "calc(100% - 4rem)" }}
+                    transition={{ type: "spring", stiffness: 50 }}
                 >
                     {/* Panel Header */}
                     <div
-                        className="flex justify-between items-center mb-2 cursor-pointer"
+                        className="flex justify-between items-center cursor-pointer"
                         onClick={togglePanel}
                     >
-                        <h3 className="text-xl font-bold">{destination}</h3>
+                        <h3 className="text-xl font-bold">{otpVerified ? "Ride Details" : "Verify OTP"}</h3>
                         <motion.div
                             className="text-2xl"
                             initial={{ rotate: 0 }}
                             animate={{ rotate: panelOpen ? 180 : 0 }}
                             transition={{ duration: 0.3 }}
                         >
-                            {panelOpen ? "\u25BC" : "\u25B2"}
+                            {panelOpen ? <i className="ri-arrow-up-double-line"></i> : <i className="ri-arrow-up-double-fill"></i>}
                         </motion.div>
                     </div>
 
@@ -55,31 +118,44 @@ function CaptainRiding({ destination, directions }) {
                     {panelOpen && (
                         <motion.div
                             initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5 }}
+                            animate={{ opacity: 1 }} // Fade-in effect for content
+                            transition={{ type: "spring", stiffness: 50 }}
                         >
-                            {/* Directions */}
-                            <div className="mt-4 space-y-3">
-                                <h4 className="font-semibold text-lg">Instructions:</h4>
-                                <ul className="list-disc list-inside space-y-2">
-                                    {directions.map((instruction, index) => (
-                                        <li key={index} className="text-gray-300">
-                                            {instruction}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Complete Ride Button */}
-                            <button
-                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-6 w-full"
-                            >
-                                Complete Ride
-                            </button>
+                            {!finishRideShow ? (
+                                !otpVerified ? (
+                                    // OTP Verification Section
+                                    <div className="flex flex-col items-center mt-4">
+                                        <OTPInput
+                                            correctOTP={correctOTP}
+                                            onSuccess={() => setOtpVerified(true)} // Update OTP verification state
+                                        />
+                                    </div>
+                                ) : (
+                                    // Ride Information Section
+                                    <div className="mt-4">
+                                        <h2 className="text-xl font-bold mb-2">Drop Location:</h2>
+                                        <p className="text-yellow-400 mb-4 text-2xl">{destination}</p>
+                                        <ul className="list-disc list-inside space-y-2 mt-4 text-gray-300">
+                                            {directions.map((instruction, index) => (
+                                                <li key={index}>{instruction}</li>
+                                            ))}
+                                        </ul>
+                                        <button
+                                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-6 w-full"
+                                            onClick={() => setFinishRideShow(true)}
+                                        >
+                                            Complete Ride
+                                        </button>
+                                    </div>
+                                )
+                            ) : (
+                                // FinishRide Section (Full Panel)
+                                <FinishRide />
+                            )}
                         </motion.div>
                     )}
                 </motion.div>
-            </AnimatePresence>
+            </div>
         </div>
     );
 }
