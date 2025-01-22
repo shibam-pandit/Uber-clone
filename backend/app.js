@@ -8,6 +8,7 @@ import { connectToDB } from './db/db.js';
 import sessionConfig from './middlewares/sessionConfig.js';
 import userRoutes from "./routes/user.routes.js";
 import captainRoutes from "./routes/captain.routes.js";
+import mapRoutes from "./routes/maps.routes.js";
 import passport from './middlewares/authMiddleware.js';
 
 const app = express();
@@ -29,6 +30,7 @@ sessionConfig(app);
 
 app.use('/users', userRoutes);
 app.use('/captains', captainRoutes);
+app.use('/maps', mapRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

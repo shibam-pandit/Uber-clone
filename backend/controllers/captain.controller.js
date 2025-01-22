@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 import passport from "passport";
-import { findCaptainByEmail, createCaptain } from "../models/captain.model.js";
+import { findCaptainByEmail, createCaptain } from "../services/captain.services.js";
 
 const saltRounds = 10;
 

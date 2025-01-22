@@ -1,8 +1,8 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcrypt";
-import { findUserByEmail, findUserById } from "../models/user.model.js";
-import { findCaptainByEmail, findCaptainById } from "../models/captain.model.js";
+import { findUserByEmail, findUserById } from "../services/user.services.js";
+import { findCaptainByEmail, findCaptainById } from "../services/captain.services.js";
 
 // Local strategy for users
 passport.use(
@@ -72,14 +72,14 @@ passport.deserializeUser(async ({ id, type }, cb) => {
 });
 
 // Authentication middleware
-export const isAuthenticated = (req, res, next) => {
+export const Authenticated = (req, res, next) => {
   if (req.isAuthenticated() && req.user.type === "user") {
     return next();
   }
   res.status(401).json({ error: "User not authenticated. Please log in." });
 };
 
-export const isCaptainAuthenticated = (req, res, next) => {
+export const CaptainAuthenticated = (req, res, next) => {
   if (req.isAuthenticated() && req.user.type === "captain") {
     return next();
   }

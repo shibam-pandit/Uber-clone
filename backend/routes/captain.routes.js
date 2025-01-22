@@ -1,6 +1,6 @@
 import express from 'express';
 import {body} from "express-validator";
-import { isAuthenticated } from '../middlewares/authMiddleware.js';
+import { CaptainAuthenticated } from '../middlewares/authMiddleware.js';
 import { loginCaptain, logoutCaptain, registerCaptain, getCaptainProfile } from '../controllers/captain.controller.js';
 
 const router = express.Router();
@@ -26,7 +26,7 @@ router.post("/login", [
 
 router.get("/logout", logoutCaptain);
 
-router.get("/profile", isAuthenticated, getCaptainProfile);
+router.get("/profile", CaptainAuthenticated, getCaptainProfile);
 
 
 export default router;

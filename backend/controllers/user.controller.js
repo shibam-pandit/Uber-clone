@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { createUser, findUserByEmail } from "../models/user.model.js";
+import { createUser, findUserByEmail } from "../services/user.services.js";
 import { validationResult } from "express-validator";
 import passport from "passport";
 

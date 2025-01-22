@@ -179,7 +179,7 @@ const CpatainNavbar = () => {
             </li>
             <li>
               <Link
-                to="/logout"
+                to="/captain-logout"
                 onClick={() => handleLinkClick('/captain-logout')}
                 className={`${linkStyle('/logout')} text-red-600 font-semibold hover:bg-red-500`}
               >
