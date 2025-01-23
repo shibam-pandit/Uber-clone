@@ -9,6 +9,7 @@ import { connectToDB } from './db/db.js';
 import userRoutes from "./routes/user.routes.js";
 import captainRoutes from "./routes/captain.routes.js";
 import mapRoutes from "./routes/maps.routes.js";
+import ridesRoutes from "./routes/rides.routes.js";
 
 const app = express();
 connectToDB();
@@ -28,6 +29,7 @@ app.use(express.static("public"));
 app.use('/users', userRoutes);
 app.use('/captains', captainRoutes);
 app.use('/maps', mapRoutes);
+app.use('/rides', ridesRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

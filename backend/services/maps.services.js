@@ -23,6 +23,11 @@ export const getAddressCordinates = async (address) => {
 }
 
 export const getDistanceTime = async (origin, destination) => {
+
+    if(!origin || !destination) {
+        throw new Error("Please provide both origin and destination coordinates.");
+    }
+
     const apiKey = process.env.OPENROUTESERVICE_API_KEY;
     const baseUrl = "https://api.openrouteservice.org/v2/directions/driving-car";
 
