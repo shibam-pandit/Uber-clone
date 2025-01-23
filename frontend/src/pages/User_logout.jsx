@@ -10,23 +10,27 @@ function UserLogout() {
   useEffect(() => {
     const performLogout = async () => {
       try {
+        // Ensure cookies are included in the request
         axios.defaults.withCredentials = true;
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/users/logout`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/users/logout`
+        );
+
         if (response.status === 200) {
+          // Clear user data and navigate to login
           localStorage.removeItem("user");
-          setUser(null); // Clear user data in context
-          navigate("/login"); // Navigate to login after successful logout
+          setUser(null);
+          navigate("/login");
         }
       } catch (error) {
-        localStorage.removeItem("user");
-        setUser(null); // Clear user data in context
-        navigate("/login"); // Navigate to login after successful logout
-        console.log(error.response?.data?.errors?.[0]?.msg || "Logout failed.");
+        console.error(
+          error.response?.data?.errors?.[0]?.msg || "Logout failed."
+        );
       }
     };
 
     performLogout();
-  }, [navigate, setUser]); // Dependencies for `useEffect`
+  }, [navigate, setUser]);
 
   return (
     <div>

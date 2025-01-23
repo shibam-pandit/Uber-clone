@@ -1,9 +1,6 @@
-import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
-import passport from "passport";
+import { generateAuthToken, comparePassword, hashPassword, blackListingToken } from "../services/auth.services.js";
 import { findCaptainByEmail, createCaptain } from "../services/captain.services.js";
-
-const saltRounds = 10;
 
 export const registerCaptain = async (req, res) => {
 
@@ -20,16 +17,19 @@ export const registerCaptain = async (req, res) => {
     if (existingCaptain) {
       res.status(400).json({ errors: [{ msg: "Captain account already exists. Try logging in" }] });
     } else {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const hashedPassword = await hashPassword(password);
       const captain = await createCaptain(firstname, lastname, email, hashedPassword, color, plate, capacity, vehicleType);
 
-      req.login(captain, (err) => {
-        if (err) console.error(err);
-        const firstname = captain.firstname;
-        const email = captain.email;
+      const token = generateAuthToken(captain);
 
-        res.status(201).json({ captain: {firstname, email} });
+      res.cookie("token", token, {
+        httpOnly: true,                  // Ensures the cookie can't be accessed via JavaScript
+        secure: process.env.NODE_ENV === "production",  // Secure cookie only in production (HTTPS)
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",  // Necessary for cross-site cookies (for frontend-backend communication)
+        maxAge: 86400000    // 1 day expiry time
       });
+
+      res.status(201).json({ token, captain: { firstname, email } });
     }
   } catch (err) {
     console.error(err);
@@ -44,45 +44,49 @@ export const loginCaptain = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  try {
-    passport.authenticate("captain-local", (err, captain, info) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ errors: [{ msg: "Server error." }] });
-      }
-  
-      if (!captain) {
-        return res.status(401).json({ errors: [{ msg: "Invalid email or password." }] });
-      }
-  
-      req.login(captain, (err) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ errors: [{ msg: "Server error." }] });
-        }
+  const { email, password } = req.body;
 
-        const firstname = captain.firstname;
-        const email = captain.email;
-  
-        return res.status(200).json({ captain : {firstname, email} });
-      });
-    })(req, res, next);
+  try {
+    const captain = await findCaptainByEmail(email);
+    if (!captain) {
+      return res.status(401).json({ errors: [{ msg: "Invalid email or password" }] });
+    }
+
+    const isMatch = await comparePassword(password, captain.password);
+    if (!isMatch) {
+      return res.status(401).json({ errors: [{ msg: "Invalid email or password" }] });
+    }
+
+    const token = generateAuthToken(captain);
+
+    res.cookie("token", token, {
+      httpOnly: true,                  // Ensures the cookie can't be accessed via JavaScript
+      secure: process.env.NODE_ENV === "production",  // Secure cookie only in production (HTTPS)
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",  // Necessary for cross-site cookies (for frontend-backend communication)
+      maxAge: 86400000    // 1 day expiry time
+    });
+
+    res.status(200).json({ token, captain: { firstname: captain.firstname, email: captain.email } });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ errors: [{ msg: "Server error." }] });
   }
 }
 
-export const logoutCaptain = (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return res.status(500).json({ errors: [{ msg: "Logout failed "}] });
-      // return next(err); // Pass the error to the error-handling middleware
-    }
-    res.status(200).json({ message: "Logged out successfully." });
-  });
+export const logoutCaptain = async (req, res, next) => {
+  res.clearCookie("token");
+  const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+  if (!token) {
+    return res.status(400).json({ errors: [{ msg: "You are not logged in." }] });
+  }
+
+  await blackListingToken(token);
+
+  res.status(200).json({ msg: "Logged out successfully." });
 };
 
 export const getCaptainProfile = async (req, res) => {
-  res.status(200).json({ captain: req.user });
+  const { password, ...captainWithoutPassword } = req.captain; // Destructure to exclude the password
+  res.status(200).json({ user: captainWithoutPassword });
 };

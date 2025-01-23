@@ -1,89 +1,68 @@
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import bcrypt from "bcrypt";
-import { findUserByEmail, findUserById } from "../services/user.services.js";
-import { findCaptainByEmail, findCaptainById } from "../services/captain.services.js";
+import jwt from 'jsonwebtoken';
+import { findUserById } from '../services/user.services.js';
+import { findCaptainById } from '../services/captain.services.js';
+import dotenv from 'dotenv';
+dotenv.config();
+import { isBlackListed } from '../services/auth.services.js';
 
-// Local strategy for users
-passport.use(
-  "local",
-  new LocalStrategy(
-    { usernameField: "email", passwordField: "password" },
-    async (email, password, cb) => {
-      try {
-        const user = await findUserByEmail(email);
-        if (!user) return cb(null, false, { message: "Invalid email or password" });
+// Middleware function to authenticate users by verifying JWT
+export const Authenticate = async (req, res, next) => {
+    const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.startsWith("Bearer")
+        ? req.headers.authorization.split(" ")[1]
+        : null); // "Bearer <token>"
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
-          user.type = "user"; // Add type for serialization
-          return cb(null, user);
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is missing' });
+    }
+
+    const blackListed = await isBlackListed(token);
+    if (blackListed) {
+        return res.status(401).json({ error: 'You are not authorized to access this route' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the JWT token
+
+        const user = await findUserById(decoded._id); // Fetch user from the DB based on decoded token ID
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
         }
-        return cb(null, false, { message: "Invalid email or password" });
-      } catch (err) {
-        return cb(err);
-      }
+
+        req.user = user;  // Attach the user to the request object
+        
+        return next(); // Proceed to the next middleware or route handler
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
     }
-  )
-);
-
-// Local strategy for captains
-passport.use(
-  "captain-local",
-  new LocalStrategy(
-    { usernameField: "email", passwordField: "password" },
-    async (email, password, cb) => {
-      try {
-        const captain = await findCaptainByEmail(email);
-        if (!captain) return cb(null, false, { message: "Invalid email or password" });
-
-        const isMatch = await bcrypt.compare(password, captain.password);
-        if (isMatch) {
-          captain.type = "captain"; // Add type for serialization
-          return cb(null, captain);
-        }
-        return cb(null, false, { message: "Invalid email or password" });
-      } catch (err) {
-        return cb(err);
-      }
-    }
-  )
-);
-
-// Unified serialization
-passport.serializeUser((entity, cb) => {
-  cb(null, { id: entity.id, type: entity.type }); // Store both ID and type
-});
-
-// Unified deserialization
-passport.deserializeUser(async ({ id, type }, cb) => {
-  try {
-    if (type === "user") {
-      const user = await findUserById(id);
-      return cb(null, user);
-    } else if (type === "captain") {
-      const captain = await findCaptainById(id);
-      return cb(null, captain);
-    }
-    cb(new Error("Invalid type during deserialization"));
-  } catch (err) {
-    cb(err);
-  }
-});
-
-// Authentication middleware
-export const Authenticated = (req, res, next) => {
-  if (req.isAuthenticated() && req.user.type === "user") {
-    return next();
-  }
-  res.status(401).json({ error: "User not authenticated. Please log in." });
 };
 
-export const CaptainAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated() && req.user.type === "captain") {
-    return next();
-  }
-  res.status(401).json({ error: "Captain not authenticated. Please log in." });
-};
+// Middleware function to authenticate users by verifying JWT
+export const CaptainAuthenticate = async (req, res, next) => {
+    const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.startsWith("Bearer")
+        ? req.headers.authorization.split(" ")[1]
+        : null); // "Bearer <token>"
 
-export default passport;
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization token is missing' });
+    }
+
+    const blackListed = await isBlackListed(token);
+    if (blackListed) {
+        return res.status(401).json({ error: 'You are not authorized to access this route' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the JWT token
+
+        const captain = await findCaptainById(decoded._id); // Fetch captain from the DB based on decoded token ID
+        if (!captain) {
+            return res.status(401).json({ error: 'Captain not found' });
+        }
+
+        req.captain = captain;  // Attach the captain to the request object
+
+        return next(); // Proceed to the next middleware or route handler
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+}

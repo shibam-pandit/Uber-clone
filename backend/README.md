@@ -17,14 +17,23 @@ Registers a new user in the system.
 ```
 
 ### Response
-• Status `201`: User created successfully.  
+• Status `201`: User created successfully. Returns a JWT token in a cookie.  
+  ```json
+  {
+    "token": "string",
+    "user": {
+      "firstname": "string",
+      "email": "string"
+    }
+  }
+  ```
 • Status `400`: Validation errors (email format, minimum lengths, etc.).  
 • Status `500`: Server error.
 
 # /users/login Endpoint
 
 ### Description
-Authenticates user credentials and returns the user object on success. Sets a session cookie for authenticated actions.
+Authenticates user credentials and returns the user object on success. Sets a JWT token in a cookie for authenticated actions.
 
 ### Request
 • Method: POST  
@@ -38,14 +47,13 @@ Authenticates user credentials and returns the user object on success. Sets a se
 ```
 
 ### Response
-• Status `200`: User authenticated successfully.  
+• Status `200`: User authenticated successfully. Returns a JWT token in a cookie.  
   ```json
   {
+    "token": "string",
     "user": {
-      "id": "1",
-      "firstname": "John",
-      "lastname": "Doe",
-      "email": "john.doe@example.com"
+      "firstname": "string",
+      "email": "string"
     }
   }
   ```
@@ -64,6 +72,7 @@ Logs out the authenticated user. Requires the session cookie to be sent.
 
 ### Response
 • Status `200`: Logged out successfully.  
+• Status `400`: User not logged in.  
 • Status `500`: Server error.
 
 # /users/profile Endpoint
@@ -113,14 +122,23 @@ Registers a new captain in the system.
 ```
 
 ### Response
-• Status `201`: Captain created successfully.  
+• Status `201`: Captain created successfully. Returns a JWT token in a cookie.  
+  ```json
+  {
+    "token": "string",
+    "captain": {
+      "firstname": "string",
+      "email": "string"
+    }
+  }
+  ```
 • Status `400`: Validation errors (email format, minimum lengths, etc.).  
 • Status `500`: Server error.
 
 # /captains/login Endpoint
 
 ### Description
-Authenticates captain credentials and returns the captain object on success. Sets a session cookie for authenticated actions.
+Authenticates captain credentials and returns the captain object on success. Sets a JWT token in a cookie for authenticated actions.
 
 ### Request
 • Method: POST  
@@ -134,14 +152,13 @@ Authenticates captain credentials and returns the captain object on success. Set
 ```
 
 ### Response
-• Status `200`: Captain authenticated successfully.  
+• Status `200`: Captain authenticated successfully. Returns a JWT token in a cookie.  
   ```json
   {
+    "token": "string",
     "captain": {
-      "id": "1",
-      "firstname": "John",
-      "lastname": "Doe",
-      "email": "john.doe@example.com"
+      "firstname": "string",
+      "email": "string"
     }
   }
   ```
@@ -160,6 +177,7 @@ Logs out the authenticated captain. Requires the session cookie to be sent.
 
 ### Response
 • Status `200`: Logged out successfully.  
+• Status `400`: Captain not logged in.  
 • Status `500`: Server error.
 
 # /captains/profile Endpoint

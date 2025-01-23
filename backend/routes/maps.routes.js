@@ -1,6 +1,6 @@
 import express from 'express';
 import { query } from 'express-validator';
-import { Authenticated } from '../middlewares/authMiddleware.js';
+// import { Authenticated } from '../middlewares/authMiddleware.js';
 import { getCoordinates, getDistanceAndTime, getNearbyLocations } from '../controllers/maps.controller.js';
 
 const router = express.Router();

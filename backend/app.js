@@ -4,12 +4,11 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import { connectToDB } from './db/db.js';
-import sessionConfig from './middlewares/sessionConfig.js';
 import userRoutes from "./routes/user.routes.js";
 import captainRoutes from "./routes/captain.routes.js";
 import mapRoutes from "./routes/maps.routes.js";
-import passport from './middlewares/authMiddleware.js';
 
 const app = express();
 connectToDB();
@@ -23,10 +22,8 @@ app.use(
 );
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json()); // This will correctly parse JSON bodies
+app.use(cookieParser());
 app.use(express.static("public"));
-
-// Configure session and passport
-sessionConfig(app);
 
 app.use('/users', userRoutes);
 app.use('/captains', captainRoutes);

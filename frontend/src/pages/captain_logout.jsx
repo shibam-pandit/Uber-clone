@@ -9,21 +9,28 @@ function CaptainLogout() {
 
     useEffect(() => {
         const performLogout = async () => {
-            try {
-                axios.defaults.withCredentials = true;
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/captains/logout`);
-                if (response.status === 200) {
-                    localStorage.removeItem("captain");
-                    setCaptain(null); // Clear captain data in context
-                    navigate("/captain-login"); // Navigate to login after successful logout
-                }
-            } catch (error) {
-                alert("Error logging out. Please try again.");
+          try {
+            // Ensure cookies are included in the request
+            axios.defaults.withCredentials = true;
+            const response = await axios.get(
+              `${import.meta.env.VITE_API_URL}/captains/logout`
+            );
+    
+            if (response.status === 200) {
+              // Clear user data and navigate to login
+              localStorage.removeItem("captain");
+              setCaptain(null);
+              navigate("/login");
             }
+          } catch (error) {
+            console.error(
+              error.response?.data?.errors?.[0]?.msg || "Logout failed."
+            );
+          }
         };
-
+    
         performLogout();
-    }, [navigate, setCaptain]); // Dependencies for `useEffect`
+      }, [navigate, setCaptain]);
 
     return (
         <div>
