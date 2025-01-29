@@ -1,16 +1,21 @@
 import db from "../db/db.js";
 import { getDistanceTime, getAddressCordinates } from "./maps.services.js";
 
-const getFare = async(pickup, destination) => {
+export const getFare = async(pickup, destination) => {
     if(!pickup || !destination) {
         throw new Error("Please provide both pickup and destination addresses.");
     }
+
+    console.log("Fetching coordinates for:", { pickup, destination });
 
     const pickup_coords = await getAddressCordinates(pickup);
     const destination_coords = await getAddressCordinates(destination);
 
     const distanceTime = await getDistanceTime(pickup_coords, destination_coords);
     const { distance, duration } = distanceTime;
+
+    console.log("Distance:", distance, "Duration:", duration);
+    
 
     // Define fare details for each vehicle type
     const fareRates = {
@@ -33,7 +38,7 @@ const getFare = async(pickup, destination) => {
 
     // Calculate fares for each vehicle type
     const calculateFare = (baseFare, perKm, perMin) => {
-        return baseFare + (perKm * distance/1000) + (perMin * duration/60);
+        return Math.floor(baseFare + (perKm * distance/1000) + (perMin * duration/60));
     };
 
     const fares = {
@@ -66,7 +71,7 @@ export const createRide = async (userId, pickup, destination, vehicleType) => {
     // Insert ride details into the database
     const ride = await db.query(
         "INSERT INTO ride (userid, pickup, destination, vehicletype, fare, otp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-        [userId, pickup, destination, vehicleType, parseInt(fares[vehicleType]), generateOTP(6)]
+        [userId, pickup, destination, vehicleType, fares[vehicleType], generateOTP(6)]
     );
 
     return ride.rows[0]; // Returns the newly created ride

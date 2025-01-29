@@ -19,6 +19,7 @@ function UserLogout() {
         if (response.status === 200) {
           // Clear user data and navigate to login
           localStorage.removeItem("user");
+          localStorage.removeItem("token");
           setUser(null);
           navigate("/login");
         }

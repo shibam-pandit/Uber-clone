@@ -35,6 +35,7 @@ function CaptainLogin() {
         const data = response.data;
         setCaptain(data.captain);
         localStorage.setItem('captain', JSON.stringify(data.captain));
+        localStorage.setItem('token', data.token);
         navigate("/captain-home");
       }else{
         alert("Login failed. Please try again.");

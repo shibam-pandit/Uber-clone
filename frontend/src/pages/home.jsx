@@ -17,7 +17,6 @@ const Home = () => {
     const [searchPanelShow, setSearchPanelShow] = useState(false); // Search panel visibility
     const [pricingShow, setPricingShow] = useState(false); // Pricing visibility
     const [activeInput, setActiveInput] = useState(null); // Currently active input
-    const [confirmRidePanelShow, setConfirmRidePanelShow] = useState(false); // Confirm ride panel visibility
 
     const pickupHandler = (e) => setPickup(e.target.value);
     const dropHandler = (e) => setDrop(e.target.value);
@@ -34,7 +33,6 @@ const Home = () => {
         if (pickup && drop) {
             setSearchPanelShow(false);
             setPricingShow(true);
-            setConfirmRidePanelShow(false);
         }
     };
 
@@ -47,7 +45,7 @@ const Home = () => {
                 {/* Large Screen Layout */}
                 <div className="hidden lg:flex min-h-screen">
                     <div className="w-1/3 p-8">
-                        {!pricingShow && !confirmRidePanelShow && (<><h2 className="text-2xl font-bold mb-4">
+                        {!pricingShow && (<><h2 className="text-2xl font-bold mb-4">
                             Hey {user?.firstname || ''}, Book a Ride
                         </h2>
                             <form className="space-y-4" onSubmit={submitHandler}>
@@ -79,41 +77,25 @@ const Home = () => {
                                     Show Prices
                                 </button>
                             </form></>)}
-                        {searchPanelShow && !pricingShow && !confirmRidePanelShow && (
+                        {searchPanelShow && !pricingShow && (
                             <LocationSearchPanel
+                                pickup={pickup}
+                                drop={drop}
                                 setPickup={setPickup}
                                 setDrop={setDrop}
                                 activeInput={activeInput}
                             />
                         )}
-                        {!searchPanelShow && pricingShow && !confirmRidePanelShow && (
+                        {!searchPanelShow && pricingShow && (
                             <>
-                                <div
-                                    className="flex justify-center items-center h-6 w-6 mb-5 border-2 bg-slate-400 border-black rounded-full cursor-pointer hover:bg-slate-600"
-                                    onClick={() => setPricingShow(false)}
-                                >
-                                    <i className="ri-arrow-left-line"></i>
-                                </div>
                                 <div className="inset-0 pt-5">
                                     <RidePricing
+                                        pickup={pickup}
+                                        destination={drop}
                                         setPricingShow={setPricingShow}
-                                        setConfirmRidePanelShow={setConfirmRidePanelShow}
                                     />
                                 </div>
                             </>
-                        )}
-                        {!searchPanelShow && confirmRidePanelShow && !pricingShow && (
-                            <div>
-                                <div
-                                    className="flex justify-center items-center h-6 w-6 m-5 border-2 bg-slate-400 border-black rounded-full cursor-pointer hover:bg-slate-600"
-                                    onClick={() => { setPricingShow(true); setConfirmRidePanelShow(false) }}
-                                >
-                                    <i className="ri-arrow-left-line"></i>
-                                </div>
-                                <div className="inset-0 py-5">
-                                    <ConfirmRidePanel />
-                                </div>
-                            </div>
                         )}
                     </div>
                     <div className="w-2/3 ml-5 border-l-2 border-l-black">
@@ -179,8 +161,8 @@ const Home = () => {
                                 >
                                     &times;
                                 </button>
-                                <h2 className={`text-2xl font-bold text-center mb-6 ${pricingShow || confirmRidePanelShow ? 'hidden' : 'block'}`}>Book a Ride</h2>
-                                <form className={`space-y-4 ${pricingShow || confirmRidePanelShow ? 'hidden' : 'block'}`} onSubmit={submitHandler}>
+                                <h2 className={`text-2xl font-bold text-center mb-6 ${pricingShow ? 'hidden' : 'block'}`}>Book a Ride</h2>
+                                <form className={`space-y-4 ${pricingShow ? 'hidden' : 'block'}`} onSubmit={submitHandler}>
                                     <div>
                                         <label className="block mb-2 text-gray-700 font-semibold">Pickup Location</label>
                                         <input
@@ -210,8 +192,10 @@ const Home = () => {
                                         Show Prices
                                     </button>
                                 </form>
-                                {searchPanelShow && !pricingShow && !confirmRidePanelShow && (
+                                {searchPanelShow && !pricingShow && (
                                     <LocationSearchPanel
+                                        pickup={pickup}
+                                        drop={drop}
                                         setPickup={setPickup}
                                         setDrop={setDrop}
                                         activeInput={activeInput}
@@ -220,30 +204,11 @@ const Home = () => {
 
                                 {pricingShow && (
                                     <div>
-                                        <div
-                                            className="flex justify-center items-center h-6 w-6 mb-5 border-2 bg-slate-400 border-black rounded-full cursor-pointer hover:bg-slate-600"
-                                            onClick={() => setPricingShow(false)}
-                                        >
-                                            <i className="ri-arrow-left-line"></i>
-                                        </div>
                                         <RidePricing
+                                            pickup={pickup}
+                                            destination={drop}
                                             setPricingShow={setPricingShow}
-                                            setConfirmRidePanelShow={setConfirmRidePanelShow}
                                         />
-                                    </div>
-                                )}
-
-                                {confirmRidePanelShow && !pricingShow && (
-                                    <div>
-                                        <div
-                                            className="flex justify-center items-center h-6 w-6 mb-9 border-2 bg-slate-400 border-black rounded-full cursor-pointer hover:bg-slate-600"
-                                            onClick={() => { setPricingShow(true); setConfirmRidePanelShow(false) }}
-                                        >
-                                            <i className="ri-arrow-left-line"></i>
-                                        </div>
-                                        <div >
-                                            <ConfirmRidePanel />
-                                        </div>
                                     </div>
                                 )}
                             </motion.div>

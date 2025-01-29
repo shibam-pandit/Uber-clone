@@ -22,7 +22,7 @@ router.get('/get-distance-time',
     getDistanceAndTime
 );
 
-router.get('/get-suggetions',
+router.get('/get-suggestions',
     Authenticate,
 
     query('address').isString().isLength({min:3}).withMessage('Address is required of minimum length 3 characters'),

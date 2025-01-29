@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import RideInfo from "./RideInfo";
+import uber_car from "../assets/uber_car.png";
+import uber_moto from "../assets/uber_moto.png";
+import uber_auto from "../assets/uber_auto.png";
 
-function ConfirmRidePanel() {
+function ConfirmRidePanel(props) {
 
-    // const { setPricingShow } = props;
+    const { setConfirmRidePanelShow, img, pickup, destination, fare, vehicle } = props;
 
     const [lookingForDriver, setLookingForDriver] = useState(false);
     const [rideInfoShow, setRideInfoShow] = useState(false);
@@ -41,10 +44,17 @@ function ConfirmRidePanel() {
                         </>
                     )}
 
+                    <div
+                        className="flex justify-center items-center h-6 w-6 m-5 border-2 bg-slate-400 border-black rounded-full cursor-pointer hover:bg-slate-600"
+                        onClick={() => { setConfirmRidePanelShow(false) }}
+                    >
+                        <i className="ri-arrow-left-line"></i>
+                    </div>
+
                     <div className="flex justify-center mb-4 border-b-2 p-2 border-b-gray-300 w-full">
                         <img
-                            src="https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_384,w_576/v1649230978/assets/a2/553a18-2f77-4722-a4ba-f736f4cb405e/original/Uber_Moto_Orange_558x372_pixels_Desktop.png"
-                            alt="uber_moto"
+                            src={img}
+                            alt={vehicle}
                             className="h-[70px]"
                         />
                     </div>
@@ -53,8 +63,8 @@ function ConfirmRidePanel() {
                         <div className="flex w-full justify-start gap-5">
                             <div className="flex justify-center items-center"> 📍 </div>
                             <div className="space-y-1 border-b-2 p-2 border-b-gray-300 w-full">
-                                <h3 className="font-bold">562/11-A</h3>
-                                <p className="text-gray-500">Kalikondrahalli, Bengaluru, Karnataka</p>
+                                <h3 className="font-bold">{pickup}</h3>
+                                <p className="text-gray-500">Pickup Location</p>
                             </div>
                         </div>
                     </div>
@@ -63,8 +73,8 @@ function ConfirmRidePanel() {
                         <div className="flex w-full justify-start gap-5">
                             <div className="flex justify-center items-center text-lg font-bold"> ∎ </div>
                             <div className="space-y-1 border-b-2 p-2 border-b-gray-300 w-full">
-                                <h3 className="font-bold">Third Wave Coffee</h3>
-                                <p className="text-gray-500">17th Cross Rd, PWD Quarters, 1st Sector, HSR Layout, Bengaluru, Karnataka</p>
+                                <h3 className="font-bold">{destination}</h3>
+                                <p className="text-gray-500">Destination</p>
                             </div>
                         </div>
                     </div>
@@ -73,8 +83,8 @@ function ConfirmRidePanel() {
                         <div className="flex w-full justify-start gap-5">
                             <div className="flex justify-center items-center"> 〓 </div>
                             <div className="space-y-1 border-b-2 p-2 border-b-gray-300 w-full">
-                                <h3 className="font-bold">193.20</h3>
-                                <p className="text-gray-500">Cash Cash</p>
+                                <h3 className="font-bold">{fare}</h3>
+                                <p className="text-gray-500">Fare</p>
                             </div>
                         </div>
                     </div>
@@ -82,9 +92,11 @@ function ConfirmRidePanel() {
                     {!lookingForDriver && <div className="flex justify-center items-center mt-1">
                         <button
                             className="p-2 bg-blue-600 font-semibold rounded-lg text-white hover:bg-blue-900 w-1/2"
-                            onClick={() => {setLookingForDriver(true); setTimeout(() => {
-                                setRideInfoShow(true);
-                            }, 5000);}}
+                            onClick={() => {
+                                setLookingForDriver(true); setTimeout(() => {
+                                    setRideInfoShow(true);
+                                }, 5000);
+                            }}
                         >
                             Confirm Ride
                         </button>

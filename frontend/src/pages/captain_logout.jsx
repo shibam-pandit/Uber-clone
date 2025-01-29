@@ -19,6 +19,7 @@ function CaptainLogout() {
             if (response.status === 200) {
               // Clear user data and navigate to login
               localStorage.removeItem("captain");
+              localStorage.removeItem("token");
               setCaptain(null);
               navigate("/login");
             }
