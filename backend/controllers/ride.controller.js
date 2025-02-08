@@ -1,6 +1,8 @@
 import { validationResult } from "express-validator";
-import { createRide } from "../services/ride.services.js";
-import { getFare } from "../services/ride.services.js";
+import { createRide, getFare } from "../services/ride.services.js";
+import { findNearbyCaptains } from "../services/captain.services.js";
+import { sendMessageToSocketId } from "../socket.js";
+import { getAddressCordinates } from "../services/maps.services.js";
 
 export const RideCreate = async (req, res) => {
     const errors = validationResult(req);
@@ -8,11 +10,40 @@ export const RideCreate = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { pickup, destination, vehicleType } = req.body;
-    
+    const { pickup, destination, vehicleType, fare } = req.body;
+
     try {
-        const ride = await createRide(req.user.id, pickup, destination, vehicleType);
+        const ride = await createRide(req.user.id, pickup, destination, vehicleType, fare);
+    
         res.status(201).json(ride);
+        
+        (async () => {
+            
+            try {
+                const pickupCordinates = await getAddressCordinates(pickup);
+                const nearCaptains = await findNearbyCaptains(pickupCordinates.lat, pickupCordinates.lon);
+                
+                ride.otp = "";
+
+                nearCaptains.forEach(captain => {
+                    sendMessageToSocketId(captain.socket_id, {
+                        type: 'ride-requests',
+                        payload: {
+                            data: ride,
+                            distance: Math.round(captain.distance * 100) / 100,
+                            user: {
+                                firstname: req.user.firstname,
+                                lastname: req.user.lastname,
+                            }
+                        }
+                    });
+                })
+            }
+            catch (error) {
+                console.log("Error in sending ride requests to captains", error);
+            }
+        })();  // In JavaScript, declaring an async arrow function like this does nothing until you call it. To invoke it immediately (as an Immediately Invoked Function Expression, or IIFE), you need to add () at the end:
+
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

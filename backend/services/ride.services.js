@@ -6,15 +6,11 @@ export const getFare = async(pickup, destination) => {
         throw new Error("Please provide both pickup and destination addresses.");
     }
 
-    console.log("Fetching coordinates for:", { pickup, destination });
-
     const pickup_coords = await getAddressCordinates(pickup);
     const destination_coords = await getAddressCordinates(destination);
 
     const distanceTime = await getDistanceTime(pickup_coords, destination_coords);
     const { distance, duration } = distanceTime;
-
-    console.log("Distance:", distance, "Duration:", duration);
     
 
     // Define fare details for each vehicle type
@@ -61,17 +57,15 @@ const generateOTP = (num) => {
     return Math.floor(Math.random() * (max - min + 1)) + min; // Generate OTP
 };
 
-export const createRide = async (userId, pickup, destination, vehicleType) => {
+export const createRide = async (userId, pickup, destination, vehicleType, fare) => {
     if(!userId || !pickup || !destination || !vehicleType) {
         throw new Error("Please provide all required ride details.");
     }
 
-    const fares = await getFare(pickup, destination);
-
     // Insert ride details into the database
     const ride = await db.query(
         "INSERT INTO ride (userid, pickup, destination, vehicletype, fare, otp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-        [userId, pickup, destination, vehicleType, fares[vehicleType], generateOTP(6)]
+        [userId, pickup, destination, vehicleType, fare, generateOTP(6)]
     );
 
     return ride.rows[0]; // Returns the newly created ride

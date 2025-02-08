@@ -1,17 +1,57 @@
 // Import necessary libraries
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { motion } from "framer-motion";
 import CaptainNavbar from "../captain-components/Captain_Navbar";
 import RideRequest from "../captain-components/RideRequest";
 import { CaptainDataContext } from "../context/captainContext";
+import { SocketContext } from "../context/socketContext";
 
 const CaptainHome = () => {
 
   const { captain } = useContext(CaptainDataContext);
+  const { sendMessage } = useContext(SocketContext);
+
+  // connection with socket
+  useEffect(() => {
+    sendMessage('join', { userEmail: captain.email, userType: 'captain' });
+  }, []);
+
   const [rideRequestsshow, setRideRequestsshow] = useState(false)
+
+  useEffect(() => {  
+    if (!rideRequestsshow) {
+      return;
+    }
+  
+    if (!captain?.email) {
+      return;
+    }
+  
+    let intervalId;
+  
+    const updateLocation = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          sendMessage("captain-update-location", { email: captain.email, latitude, longitude });
+        },
+        (error) => {
+          alert("Problem fetching location.", error.message);
+          console.error("Geolocation error:", error)
+        } 
+      );
+    };
+  
+    updateLocation(); // Send first update immediately
+    intervalId = setInterval(updateLocation, 10000); // Update every 10s
+  
+    return () => clearInterval(intervalId);
+  }, [rideRequestsshow, captain?.email]); // Depend on rideRequestsshow & captain.email
+
 
   const handleGoOnline = () => {
     setRideRequestsshow(true);
+
   };
 
   return (

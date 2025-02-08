@@ -11,6 +11,7 @@ router.post('/create',
     body('pickup').isString().notEmpty().withMessage('Invalid pickup location'),
     body('destination').isString().notEmpty().withMessage('Invalid destination location'),
     body('vehicleType').isString().isIn(['car', 'motorcycle', 'auto']).notEmpty().withMessage('Invalid vehicle type'),
+    body('fare').isNumeric().notEmpty().withMessage('Invalid fare amount'),
 
     RideCreate
 );

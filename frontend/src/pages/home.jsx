@@ -5,10 +5,10 @@ import Navbar from '../components/Navbar';
 // import Footer from '../components/Footer';
 import LocationSearchPanel from '../components/LocationSearchPanel';
 import RidePricing from '../components/RidePricing';
-import ConfirmRidePanel from '../components/ConfirmRidePanel';
 import 'remixicon/fonts/remixicon.css';
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { SocketContext } from '../context/socketContext';
 
 const Home = () => {
     const [isFormExpanded, setFormExpanded] = useState(false); // Form visibility in small screens
@@ -17,6 +17,15 @@ const Home = () => {
     const [searchPanelShow, setSearchPanelShow] = useState(false); // Search panel visibility
     const [pricingShow, setPricingShow] = useState(false); // Pricing visibility
     const [activeInput, setActiveInput] = useState(null); // Currently active input
+    const { user } = React.useContext(UserDataContext);
+    const { sendMessage } = React.useContext(SocketContext);
+
+    //socket id set
+    useEffect(() => {
+        console.log("Connected with socket");
+        
+        sendMessage("join", { userEmail: user.email, userType: 'user' });
+    }, [user]);
 
     const pickupHandler = (e) => setPickup(e.target.value);
     const dropHandler = (e) => setDrop(e.target.value);
@@ -36,8 +45,6 @@ const Home = () => {
         }
     };
 
-    const { user } = React.useContext(UserDataContext);
-
     return (
         <div>
             <Navbar />
@@ -49,7 +56,6 @@ const Home = () => {
                             Hey {user?.firstname || ''}, Book a Ride
                         </h2>
                             <form className="space-y-4" onSubmit={submitHandler}>
-                                <div className="line absolute top-[17%] bg-gray-800 h-16 w-1 ml-2"></div>
                                 <div className="flex items-center space-x-2">
                                     <input
                                         type="text"

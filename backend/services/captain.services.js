@@ -33,19 +33,10 @@ export const findCaptainById = async (id) => {
 };
 
 // Update a captain's socket_id
-export const updateCaptainSocketId = async (id, socketId) => {
+export const updateCaptainSocketId = async (email, socketId) => {
     const result = await db.query(
-        "UPDATE captains SET socket_id = $1 WHERE id = $2 RETURNING *",
-        [socketId, id]
-    );
-    return result.rows[0]; // Return the updated captain record
-};
-
-// Update captain status (active/inactive)
-export const updateCaptainStatus = async (id, status) => {
-    const result = await db.query(
-        "UPDATE captains SET status = $1 WHERE id = $2 RETURNING *",
-        [status, id]
+        "UPDATE captains SET socket_id = $1 WHERE email = $2 RETURNING *",
+        [socketId, email]
     );
     return result.rows[0]; // Return the updated captain record
 };
@@ -53,17 +44,16 @@ export const updateCaptainStatus = async (id, status) => {
 // Fetch vehicle details for the captain
 export const findVehicleByCaptainId = async (captainId) => {
     const result = await db.query(
-        "SELECT * FROM vehicle WHERE captain_id = $1",
+        "SELECT * FROM vehicles WHERE captain_id = $1",
         [captainId]
     );
     return result.rows[0]; // Return the vehicle details (if any)
 };
 
-
 // Fetch current location details for the captain
 export const findLocationByCaptainId = async (captainId) => {
     const result = await db.query(
-        "SELECT latitude, longitude FROM location WHERE captain_id = $1",
+        "SELECT lat, lon FROM location WHERE captain_id = $1",
         [captainId]
     );
     return result.rows[0]; // Return the location details (if any)
@@ -95,4 +85,48 @@ export const findCaptainByEmailWithDetails = async (email) => {
         vehicle,    // Attach vehicle details
         location    // Attach location details
     };
+};
+
+export const updateCaptainLocation = async(id, lat, lon) => {
+    const result = await db.query(
+        `INSERT INTO captain_locations (captain_id, lat, lon)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (captain_id) DO UPDATE 
+       SET lat = EXCLUDED.lat, lon = EXCLUDED.lon`,     // EXCLUDED is a special table that stores values from the row that would have been inserted if there were no conflict.
+      [id, lat, lon]
+    );
+    return result.rows[0]; // Return the updated location record
+};
+
+export const deleteCaptainLocation = async(id) => {
+    await db.query("DELETE FROM captain_locations WHERE captain_id = $1", [id]);
+};
+
+export const findNearbyCaptains = async (lat, lon, radius = 10) => {
+    // Haversine Formula to find nearby captains
+    const query = `
+        SELECT * FROM (
+            SELECT cl.captain_id, cl.lat, cl.lon, c.socket_id,
+                   (6371 * acos(cos(radians($1)) * cos(radians(cl.lat)) *
+                   cos(radians(cl.lon) - radians($2)) + sin(radians($1)) *
+                   sin(radians(cl.lat)))) AS distance
+            FROM captain_locations cl 
+            JOIN captains c ON cl.captain_id = c.id
+        ) AS subquery
+        WHERE distance < $3
+        ORDER BY distance ASC;
+    `;
+
+    const result = await db.query(query, [lat, lon, radius]);
+    return result.rows; // Returns list of nearby captains
+};
+
+export const confirmRide = async (captainId, rideId) => {
+    console.log("Confirming ride for captain", captainId, "ride", rideId);
+    
+    const result = await db.query(
+        "UPDATE ride SET captainid = $1 WHERE id = $2 RETURNING *",
+        [captainId, rideId]
+    );
+    return result.rows[0]; // Return the confirmed ride record
 };

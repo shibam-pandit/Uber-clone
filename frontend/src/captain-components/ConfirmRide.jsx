@@ -1,18 +1,41 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 function ConfirmRide(props) {
     const { setConfirmRidePanelShow, request } = props;
 
-    // Split the pickup address into two parts
-    const pickupParts = request.pickup.split(" ", 2); // Adjust the split logic based on actual input format
-    const pickupNumbers = pickupParts[0]; // Number part (e.g., "123/3/4")
-    const pickupRoad = pickupParts[1]; // Road name part
-    // Split the drop address into two parts
-    const dropParts = request.drop.split(" ", 2); // Adjust the split logic based on actual input format
-    const dropNumbers = dropParts[0]; // Number part (e.g., "123/3/4")
-    const dropRoad = dropParts[1]; // Road name part
+    // Split the pickup address into first word and the rest
+    const [pickupFirstWord, ...pickupRest] = request.pickup.split(" ");
+    const pickupAddress = pickupRest.join(" "); // Join the rest of the address back into a string
+
+    // Split the drop address into first word and the rest
+    const [dropFirstWord, ...dropRest] = request.drop.split(" ");
+    const dropAddress = dropRest.join(" "); // Join the rest of the address back into a string
+
+    const navigate = useNavigate();
+
+    const confirmRideHandler = async () => {
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/captains/confirm-ride`, {
+                userId: request.userId,
+                rideId: request.id,
+                distance: request.distance
+            }, {
+                withCredentials: true
+            });
+
+            if(response.status === 200) 
+                navigate("/captain-riding");
+            else if(response.status === 401)
+                navigate("/captain-login");
+                
+        } catch (error) {
+            console.error("Error creating ride:", error.message);
+            alert("Error creating ride. Please try again.");
+        }
+    }
 
     return (
         <div>
@@ -35,8 +58,8 @@ function ConfirmRide(props) {
                     <div className="flex items-center gap-5">
                         <div className="text-2xl">📍</div>
                         <div className="space-y-1">
-                            <h3 className="font-bold">{pickupNumbers}</h3>
-                            <p className="text-gray-300 font-mono">{pickupRoad}</p>
+                            <h3 className="font-bold">{pickupFirstWord}</h3>
+                            <p className="text-gray-300 font-mono">{pickupAddress}</p>
                         </div>
                     </div>
                 </div>
@@ -45,8 +68,8 @@ function ConfirmRide(props) {
                     <div className="flex items-center gap-5">
                         <div className="text-2xl">∎</div>
                         <div className="space-y-1">
-                            <h3 className="font-bold">{dropNumbers}</h3>
-                            <p className="text-gray-300 font-mono">{dropRoad}</p>
+                            <h3 className="font-bold">{dropFirstWord}</h3>
+                            <p className="text-gray-300 font-mono">{dropAddress}</p>
                         </div>
                     </div>
                 </div>
@@ -62,12 +85,12 @@ function ConfirmRide(props) {
                 </div>
 
                 <div className="flex flex-col w-full justify-around items-center mt-4">
-                    <Link
-                        to="/captain-riding"
+                    <button
+                        onClick={confirmRideHandler}
                         className="bg-green-600 text-white text-center px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition mb-4 w-full"
                     >
                         Go to Pickup
-                    </Link>
+                    </button>
                     <button
                         className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition w-full"
                         onClick={() => setConfirmRidePanelShow(false)}

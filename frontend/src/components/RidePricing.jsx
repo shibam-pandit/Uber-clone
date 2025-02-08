@@ -11,7 +11,7 @@ function RidePricing(props) {
     const [loading, setLoading] = useState(false);
     const [fares, setFares] = useState(null);
     const [confirmRidePanelShow, setConfirmRidePanelShow] = useState(false);
-    const [selectedVehicle, setSelectedVehicle] = useState({ vehicle: "", fare: "", img:"" });
+    const [selectedVehicle, setSelectedVehicle] = useState({ vehicle: "", fare: "", img: "" });
 
     useEffect(() => {
         const fetchFare = async () => {
@@ -53,20 +53,20 @@ function RidePricing(props) {
 
     return (
         <div>
+            {!confirmRidePanelShow && <div
+                className="flex justify-center items-center h-6 w-6 mb-5 border-2 bg-slate-400 border-black rounded-full cursor-pointer hover:bg-slate-600"
+                onClick={() => setPricingShow(false)}
+            >
+                <i className="ri-arrow-left-line"></i>
+            </div>}
             {loading && <h2 className="text-sm mt-3 text-gray-800">Calculating prices...</h2>}
             {!loading && fares && !confirmRidePanelShow && (
                 <>
-                    <div
-                        className="flex justify-center items-center h-6 w-6 mb-5 border-2 bg-slate-400 border-black rounded-full cursor-pointer hover:bg-slate-600"
-                        onClick={() => setPricingShow(false)}
-                    >
-                        <i className="ri-arrow-left-line"></i>
-                    </div>
                     <h2 className="text-2xl font-semibold mb-5">Choose a vehicle</h2>
 
                     <div
                         className="align flex w-full items-center justify-between gap-2 px-3 py-4 mb-2 border-2 border-gray-500 hover:bg-gray-200 active:border-black cursor-pointer"
-                        onClick={() => clickHandler("UberGo", fares.car, uber_car)}
+                        onClick={() => clickHandler("car", fares.car, uber_car)}
                     >
                         <img src={uber_car} alt="uber-car" className="h-[75px]" />
                         <div className="w-1/2 space-y-1 text-center">
@@ -82,7 +82,7 @@ function RidePricing(props) {
                     {/* Additional Vehicle Options */}
                     <div
                         className="align flex w-full items-center justify-between gap-2 px-3 py-4 mb-2 border-2 border-gray-500 hover:bg-gray-200 active:border-black cursor-pointer"
-                        onClick={() => clickHandler("UberMoto", fares.motorcycle, uber_moto)}
+                        onClick={() => clickHandler("motorcycle", fares.motorcycle, uber_moto)}
                     >
                         <img
                             src={uber_moto}
@@ -100,7 +100,7 @@ function RidePricing(props) {
                     </div>
                     <div
                         className="align flex w-full items-center justify-between gap-2 px-3 py-4 mb-2 border-2 border-gray-500 hover:bg-gray-200 active:border-black cursor-pointer"
-                        onClick={() => clickHandler("UberAuto", fares.auto, uber_auto)}
+                        onClick={() => clickHandler("auto", fares.auto, uber_auto)}
                     >
                         <img
                             src={uber_auto}
@@ -124,11 +124,11 @@ function RidePricing(props) {
                     <div className="inset-0 py-5">
                         <ConfirmRidePanel
                             setConfirmRidePanelShow={setConfirmRidePanelShow}
-                            img = {selectedVehicle.img}
-                            pickup = {pickup}
-                            destination = {destination}
-                            fare = {selectedVehicle.fare}
-                            vehicle = {selectedVehicle.vehicle}
+                            img={selectedVehicle.img}
+                            pickup={pickup}
+                            destination={destination}
+                            fare={selectedVehicle.fare}
+                            vehicle={selectedVehicle.vehicle}
                         />
                     </div>
                 </div>

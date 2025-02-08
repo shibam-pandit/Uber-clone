@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import RideInfo from "./RideInfo";
-import uber_car from "../assets/uber_car.png";
-import uber_moto from "../assets/uber_moto.png";
-import uber_auto from "../assets/uber_auto.png";
+import { SocketContext } from "../context/socketContext.jsx";
+import axios from "axios";
 
 function ConfirmRidePanel(props) {
 
@@ -11,11 +11,55 @@ function ConfirmRidePanel(props) {
 
     const [lookingForDriver, setLookingForDriver] = useState(false);
     const [rideInfoShow, setRideInfoShow] = useState(false);
+    const [acceptedCaptain, setAcceptedCaptain] = useState({});
+    const navigate = useNavigate();
+
+    const { recieveMessage } = useContext(SocketContext);
+
+    const confirmRideHandler = async () => {
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/rides/create`, {
+                pickup,
+                destination,
+                vehicleType: vehicle,
+                fare,
+            }, {
+                withCredentials: true,
+            }
+            );
+
+            if (response.status === 201) {
+                setLookingForDriver(true);
+            }
+
+        } catch (error) {
+            console.error("Error creating ride:", error.message);
+            if (error.response.status === 401) {
+                navigate("/login");
+            }
+            alert("Error creating ride. Please try again.");
+        }
+    };
+
+    useEffect(() => {
+        const handleRideRequest = async (rideData) => {
+            console.log("Received ride request:", rideData);
+
+            setAcceptedCaptain(rideData);
+            setRideInfoShow(true);
+        };
+
+        // Listen for ride-requests
+        const cleanup = recieveMessage("ride-confirmed", handleRideRequest);
+
+        // Return cleanup function when unmounting
+        return cleanup;
+    }, [recieveMessage]); // Empty array ensures it runs only once when the component mounts  
 
     return (
         <div className="flex flex-col gap-4">
 
-            {rideInfoShow && <RideInfo />}
+            {rideInfoShow && <RideInfo acceptedCaptain={acceptedCaptain} pickup={pickup} destination={destination} />}
 
             {!rideInfoShow &&
                 <>
@@ -92,11 +136,7 @@ function ConfirmRidePanel(props) {
                     {!lookingForDriver && <div className="flex justify-center items-center mt-1">
                         <button
                             className="p-2 bg-blue-600 font-semibold rounded-lg text-white hover:bg-blue-900 w-1/2"
-                            onClick={() => {
-                                setLookingForDriver(true); setTimeout(() => {
-                                    setRideInfoShow(true);
-                                }, 5000);
-                            }}
+                            onClick={confirmRideHandler}
                         >
                             Confirm Ride
                         </button>

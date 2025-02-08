@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import ConfirmRidePanel from '../captain-components/ConfirmRide';
 import { motion } from 'framer-motion';
+import { SocketContext } from '../context/socketContext';
 
 function RideRequest() {
     const [confirmRidePanelShow, setConfirmRidePanelShow] = useState(false);
@@ -9,20 +10,51 @@ function RideRequest() {
     // Simulate receiving ride requests
     const [Requests, setRequests] = useState([
         {
-            id: 1,
+            id: 101,
             userName: "John Doe",
             pickup: "123 Main St",
             drop: "456 Elm St",
-            fare: "$15",
+            fare: "15",
+            distance: 2
         },
         {
-            id: 2,
+            id: 102,
             userName: "Alice Smith",
             pickup: "789 Oak St",
             drop: "321 Pine St",
-            fare: "$20",
+            fare: "20",
+            distance: 3
         },
     ]);
+
+    const { recieveMessage } = useContext(SocketContext);
+
+    // populate requests based on available rides
+    useEffect(() => {
+        const handleRideRequest = async (rideData) => {
+            console.log("Received ride request:", rideData);
+
+            const { data, distance, user } = rideData;
+            const newRide = {
+                userId: data.userid,
+                id: data.id,
+                userName: user.firstname + " " + user.lastname,
+                pickup: data.pickup,
+                drop: data.destination,
+                fare: data.fare,
+                distance: distance,
+            };
+
+            setRequests((prevRequests) => [newRide, ...prevRequests]);
+        };
+
+        // Listen for ride-requests
+        const cleanup = recieveMessage("ride-requests", handleRideRequest);
+
+        // Return cleanup function when unmounting
+        return cleanup;
+    }, [recieveMessage]); // Empty array ensures it runs only once when the component mounts
+
 
     const declineHandler = (ride) => {
         setRequests((prevRequests) =>
@@ -50,18 +82,26 @@ function RideRequest() {
                                 className="bg-blue-900 p-6 rounded-lg shadow-md space-y-5 cursor-pointer"
                             >
                                 <motion.div
-                                    className="flex flex-col lg:flex-row lg:justify-between lg:items-start sm:items-center sm:text-center"
+                                    className="flex flex-col lg:flex-row lg:justify-between lg:items-start sm:items-center sm:text-center w-full"
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.6 }}>
                                     {/* User Info */}
-                                    <div className="flex lg:flex-col items-center sm:justify-start lg:order-2 lg:justify-end lg:mb-0 sm:mb-4">
-                                        <img
-                                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmFjZXxlbnwwfHwwfHx8MA%3D%3D"
-                                            alt="user pic"
-                                            className="h-12 w-12 rounded-full lg:mr-0 sm:mr-4 m-2"
-                                        />
-                                        <p className="ml-4 lg:ml-2 sm:ml-0">{request.userName}</p>
+                                    <div className="flex items-center justify-between md:flex-col md:items-center lg:justify-end lg:order-2 lg:mb-0 mb-4">
+                                        {/* Image & Username - Flex on Small Screens, Stacked on Large Screens */}
+                                        <div className="flex items-center md:flex-col md:items-center">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmFjZXxlbnwwfHwwfHx8MA%3D%3D"
+                                                alt="user pic"
+                                                className="h-12 w-12 rounded-full md:mr-0 sm:mr-4 m-2"
+                                            />
+                                            <p className="ml-4 md:ml-0 md:mt-2">{request.userName}</p>
+                                        </div>
+
+                                        {/* Distance - Moves to the Right on Small Screens, Stays Below on Large Screens */}
+                                        <p className="sm:ml-auto md:ml-0 md:mt-2 text-xs sm:text-right">
+                                            <span className='text-xl font-semibold'>{request.distance}</span> km away
+                                        </p>
                                     </div>
 
                                     {/* Request Details */}
@@ -75,7 +115,7 @@ function RideRequest() {
                                         </p>
                                         <hr className="w-full text-gray-400" />
                                         <p className="text-white font-semibold text-lg p-2">
-                                            Fare: <span className="ml-1 text-2xl">{request.fare}</span>
+                                            Fare: <span className="ml-1 text-2xl">₹{request.fare}</span>
                                         </p>
                                         <hr className="w-full text-gray-400" />
                                     </div>
