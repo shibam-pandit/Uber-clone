@@ -5,6 +5,7 @@ export const CaptainDataContext = createContext();
 const CaptainContext = ({ children }) => {
     const [captain, setCaptain] = useState(null); // Initialize as null
     const [loading, setLoading] = useState(true); // Track loading state
+    const [token, setToken] = useState(null); // Initialize token as null
 
     useEffect(() => {
         // Load user data from localStorage on component mount
@@ -12,11 +13,20 @@ const CaptainContext = ({ children }) => {
         if (savedCaptain) {
             setCaptain(savedCaptain);
         }
+
+        // Check if there's a 'token' cookie
+        const cookies = document.cookie.split(';');
+        const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='));
+
+        if (tokenCookie) {
+            setToken(tokenCookie.split('=')[1]); // Extract token value
+        }
+
         setLoading(false); // Loading complete
     }, []);
 
     return (
-        <CaptainDataContext.Provider value={{ captain, setCaptain, loading }}>
+        <CaptainDataContext.Provider value={{ captain, setCaptain, loading, token }}>
             {children}
         </CaptainDataContext.Provider>
     );

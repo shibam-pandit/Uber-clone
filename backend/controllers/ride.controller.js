@@ -1,8 +1,9 @@
 import { validationResult } from "express-validator";
-import { createRide, getFare } from "../services/ride.services.js";
+import { createRide, getFare, getRideById } from "../services/ride.services.js";
 import { findNearbyCaptains } from "../services/captain.services.js";
 import { sendMessageToSocketId } from "../socket.js";
 import { getAddressCordinates } from "../services/maps.services.js";
+import { getUserSocketId } from "../services/user.services.js";
 
 export const RideCreate = async (req, res) => {
     const errors = validationResult(req);
@@ -49,7 +50,6 @@ export const RideCreate = async (req, res) => {
     }
 };
 
-
 export const getFareDetails = async (req, res, next) => {
     const { pickup, destination } = req.query;
 
@@ -70,3 +70,54 @@ export const getFareDetails = async (req, res, next) => {
         res.status(404).json({ message: "Error fetching fare details" });
     }
 };
+
+export const getRide = async (req, res) => {
+    const rideId = req.query.rideId;
+    if(!rideId) {
+        return res.status(400).json({ message: "Ride ID is required" });
+    }
+
+    try {
+        // Fetch ride details from database
+        const ride = await getRideById(rideId);
+
+        if (!ride) {
+            return res.status(404).json({ message: "Ride not found" });
+        }
+        ride.otp = ""; // Remove OTP before sending to client
+
+        res.status(200).json(ride);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const checkOTPController = async (req, res) => {
+    const { rideId, otp } = req.body;
+    
+    try {
+        const ride = await getRideById(rideId);
+        if (!ride) {
+            return res.status(404).json({ message: "Ride not found" });
+        }
+        
+        if (ride.otp != otp) {
+            return res.status(401).json({ message: "Invalid OTP" });
+        }
+
+        const user_socket_id = await getUserSocketId(ride.userid);
+
+        sendMessageToSocketId(user_socket_id.socket_id, {
+            type: 'otp-verified',
+            payload: {
+                rideId: rideId
+            }
+        });
+
+        res.status(200).json({ message: "OTP verified" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+        
+    }
+}

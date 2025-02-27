@@ -4,19 +4,23 @@ import { useContext, useEffect } from "react";
 import { UserDataContext } from "../context/UserContext";
 
 const UserProtectWrapper = ({ children }) => {
-    const { user, loading } = useContext(UserDataContext);
+    const { user, loading, token } = useContext(UserDataContext);
     const navigate = useNavigate();
 
     useEffect(() => {
         // Wait until loading is complete to decide
-        if (!loading && (!user || !user.email)) {
+        if (!loading && (!user)) {
             navigate("/login");
         }
-    }, [user, loading, navigate]);
+    }, [user, loading, token, navigate]);
 
     // If loading, show a spinner or null (placeholder)
     if (loading) {
-        return <div>Loading...</div>; // Replace with a spinner if desired
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+            </div>
+        ); // Replace with a spinner if desired
     }
 
     // If user is logged in, render the children

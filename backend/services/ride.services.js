@@ -69,4 +69,15 @@ export const createRide = async (userId, pickup, destination, vehicleType, fare)
     );
 
     return ride.rows[0]; // Returns the newly created ride
-}
+};
+
+export const getRideById = async (rideId) => {
+    if(!rideId) {
+        throw new Error("Please provide a valid ride ID.");
+    }
+
+    // Fetch ride details from the database
+    const ride = await db.query("SELECT * FROM ride WHERE id = $1", [rideId]);
+
+    return ride.rows[0]; // Returns the ride details
+};

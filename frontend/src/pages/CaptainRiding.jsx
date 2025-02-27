@@ -1,16 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import 'remixicon/fonts/remixicon.css';
 import FinishRide from "../captain-components/FinishRide";
 import OTPInput from "../captain-components/OTPInput";
+import axios from "axios";
 
-function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unknown Destination", directions = [] }) {
+function CaptainRiding() {
+    const { rideId } = useParams();
+
     const [panelOpen, setPanelOpen] = useState(true); // Panel open by default for small screens
     const [finishRideShow, setFinishRideShow] = useState(false);
     const [otpVerified, setOtpVerified] = useState(false); // State to track OTP verification
-    const [correctOTP] = useState("123456"); // Mock correct OTP
+    const [ride, setRide] = useState({});
+
+    useEffect(() => {
+        // Fetch ride details using rideId
+        const fetchRide = async () => {
+            try {          
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/rides/get-ride`, {
+                    params: { rideId },  // Pass as query parameter
+                    withCredentials: true
+                });
+                if(response.status === 200) {
+                    setRide(response.data);
+                }
+            } catch (error) {
+                console.error("Error fetching ride:", error);
+            }
+        }
+
+        fetchRide();
+    }, []);
 
     const togglePanel = () => setPanelOpen(!panelOpen);
 
@@ -21,7 +44,7 @@ function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unk
                 {/* Map Section */}
                 <div className="w-2/3">
                     <MapContainer
-                        center={[51.505, -0.09]} // Replace with dynamic coordinates
+                        center={[22.505, 88.09]} // Replace with dynamic coordinates
                         zoom={13}
                         className="h-full w-full"
                     >
@@ -38,13 +61,13 @@ function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unk
                         !otpVerified ? (
                             <>
                                 <h2 className="text-2xl font-bold mb-[10%] p-2 border-b-2 border-gray-300">
-                                    Pickup Location:<br /> <span className="text-yellow-400">{pickupLocation}</span>
+                                    Pickup Location:<br /> <span className="text-yellow-400">{ride?.pickup || "pickup"}</span>
                                 </h2>
                                 {/* // OTP Verification Section */}
                                 <div className="flex flex-col items-center">
                                     <h2 className="text-2xl font-bold text-gray-100 mb-4">Verify OTP</h2>
                                     <OTPInput
-                                        correctOTP={correctOTP}
+                                        rideId={ride.id}
                                         onSuccess={() => setOtpVerified(true)} // Update OTP verification state
                                     />
                                 </div>
@@ -53,13 +76,13 @@ function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unk
                             // Ride Information Section
                             <div>
                                 <h2 className="text-2xl font-bold mb-[10%] p-2 border-b-2 border-gray-300">
-                                    Drop Location:<br /> <span className="text-yellow-400 mt-3">{destination}</span>
+                                    Drop Location:<br /> <span className="text-yellow-400 mt-3">{ride?.destination || "destination"}</span>
                                 </h2>
-                                <ul className="list-disc list-inside space-y-2 text-gray-300">
+                                {/* <ul className="list-disc list-inside space-y-2 text-gray-300">
                                     {directions.map((instruction, index) => (
                                         <li key={index}>{instruction}</li>
                                     ))}
-                                </ul>
+                                </ul> */}
                                 <button
                                     className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-6 w-full"
                                     onClick={() => setFinishRideShow(true)}
@@ -79,7 +102,7 @@ function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unk
             <div className="lg:hidden relative h-screen w-full">
                 {/* Map Section */}
                 <MapContainer
-                    center={[51.505, -0.09]} // Replace with dynamic coordinates
+                    center={[22.505, 88.09]} // Replace with dynamic coordinates
                     zoom={13}
                     className={`h-screen w-full`}
                     style={{ zIndex: 1 }} // Ensure map stays behind the panel
@@ -126,7 +149,7 @@ function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unk
                                     // OTP Verification Section
                                     <div className="flex flex-col items-center mt-4">
                                         <OTPInput
-                                            correctOTP={correctOTP}
+                                            rideId={ride.id}
                                             onSuccess={() => setOtpVerified(true)} // Update OTP verification state
                                         />
                                     </div>
@@ -134,12 +157,12 @@ function CaptainRiding({ pickupLocation = "Unknown Location", destination = "Unk
                                     // Ride Information Section
                                     <div className="mt-4">
                                         <h2 className="text-xl font-bold mb-2">Drop Location:</h2>
-                                        <p className="text-yellow-400 mb-4 text-2xl">{destination}</p>
-                                        <ul className="list-disc list-inside space-y-2 mt-4 text-gray-300">
-                                            {directions.map((instruction, index) => (
+                                        <p className="text-yellow-400 mb-4 text-2xl">{ride?.destination || ""}</p>
+                                        {/* <ul className="list-disc list-inside space-y-2 mt-4 text-gray-300">
+                                            {directions?.map((instruction, index) => (
                                                 <li key={index}>{instruction}</li>
                                             ))}
-                                        </ul>
+                                        </ul> */}
                                         <button
                                             className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-6 w-full"
                                             onClick={() => setFinishRideShow(true)}

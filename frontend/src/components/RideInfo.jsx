@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { SocketContext } from "../context/socketContext.jsx";
 
 function RideInfo(props) {
 
@@ -7,8 +9,26 @@ function RideInfo(props) {
     if(!acceptedCaptain) {
         console.log("No accepted captain data received.");
     }
+    console.log(acceptedCaptain);
+    
 
-    const { captain, vehicle, distance, otp } = acceptedCaptain;
+    const { captain, vehicle, distance, otp, rideId } = acceptedCaptain;
+
+    const navigate = useNavigate();
+    const { recieveMessage } = useContext(SocketContext);
+
+    useEffect(() => {
+        const handleRideRequest = async (data) => {
+            navigate(`/riding/${rideId}`);
+        };
+
+        // Listen for ride-requests
+        const cleanup = recieveMessage("otp-verified", handleRideRequest);
+
+        // Return cleanup function when unmounting
+        return cleanup;
+    }, []); // Empty array ensures it runs only once when the component mounts
+
 
     return (
         <div>

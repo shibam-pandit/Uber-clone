@@ -51,14 +51,14 @@ function App() {
             </CaptainProtectWrapper>
           }
         />
-        <Route path="/riding"
+        <Route path="/riding/:rideId"
           element={
             <UserProtectWrapper>
               <Riding />
             </UserProtectWrapper>
           }
         />
-        <Route path="/captain-riding"
+        <Route path="/captain-riding/:rideId"
           element={
             <CaptainProtectWrapper>
               <CaptainRiding />

@@ -27,9 +27,7 @@ function ConfirmRide(props) {
             });
 
             if(response.status === 200) 
-                navigate("/captain-riding");
-            else if(response.status === 401)
-                navigate("/captain-login");
+                navigate(`/captain-riding/${request.id}`);
                 
         } catch (error) {
             console.error("Error creating ride:", error.message);

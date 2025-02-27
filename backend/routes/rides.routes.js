@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, query } from 'express-validator';
-import { RideCreate, getFareDetails } from '../controllers/ride.controller.js';
-import { Authenticate } from '../middlewares/authMiddleware.js';
+import { RideCreate, getFareDetails, getRide, checkOTPController } from '../controllers/ride.controller.js';
+import { Authenticate, CaptainAuthenticate } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -24,5 +24,9 @@ router.get('/get-fares',
 
     getFareDetails
 );
+
+router.get("/get-ride", getRide);
+
+router.post("/check-otp", CaptainAuthenticate, checkOTPController);
 
 export default router;

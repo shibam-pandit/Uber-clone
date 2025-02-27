@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-const OTPInput = ({ correctOTP, onSuccess }) => {
+const OTPInput = ({ rideId, onSuccess }) => {
     const [otp, setOtp] = useState("");
     const [error, setError] = useState("");
 
@@ -14,13 +15,33 @@ const OTPInput = ({ correctOTP, onSuccess }) => {
     };
 
     // Handle OTP submission
-    const handleSubmit = () => {
-        if (otp === correctOTP) {
-            onSuccess(); // Call the success handler
-        } else {
-            setError("Invalid OTP. Please try again.");
+    // const handleSubmit = () => {
+    //     if (otp === correctOTP) {
+    //         onSuccess(); // Call the success handler
+    //     } else {
+    //         setError("Invalid OTP. Please try again.");
+    //     }
+    // };
+
+    const handleSubmit = async () => {
+        try {
+            console.log(rideId, otp);
+            
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/rides/check-otp`, {
+                rideId: rideId,
+                otp: otp
+            }, {
+                withCredentials: true
+            });
+
+            if (response.status === 200) {
+                onSuccess();
+            }
+        } catch (error) {
+            setError(error.response.data.message);
+            console.log(error);
         }
-    };
+    }
 
     return (
         <div className="flex flex-col items-center space-y-4">

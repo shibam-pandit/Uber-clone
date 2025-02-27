@@ -54,7 +54,9 @@ export const initializeSocket = (server) => {
 }
 
 export const sendMessageToSocketId = (socketId, message) => {
-    if(io) {       
+    if(io) {
+        console.log(`Sending message to ${socketId}`);
+               
         io.to(socketId).emit(`${message.type}`, message.payload);
     } else {
         console.log('Socket.io is not initialized.');

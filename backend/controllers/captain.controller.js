@@ -126,7 +126,8 @@ export const confirmRideController = async (req, res) => {
               vehicleType: captain_vehicle.vehicle_type
             },
             distance: distance,
-            otp: ride.otp
+            otp: ride.otp,
+            rideId: ride.id
           }
         });
       } catch(error) {
