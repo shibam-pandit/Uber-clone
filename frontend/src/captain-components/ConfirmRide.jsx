@@ -18,7 +18,7 @@ function ConfirmRide(props) {
 
     const confirmRideHandler = async () => {
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/captains/confirm-ride`, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/rides/confirm-ride`, {
                 userId: request.userId,
                 rideId: request.id,
                 distance: request.distance

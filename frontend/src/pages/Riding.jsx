@@ -1,18 +1,91 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import 'remixicon/fonts/remixicon.css';
 import axios from "axios";
+import L from "leaflet";
+import { SocketContext } from "../context/socketContext"; 
+
+// Custom icons for markers
+const userIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149071.png", // Example user icon
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+});
+
+const captainIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", // Example captain icon
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+});
 
 function UserRiding() {
   const { rideId } = useParams();
 
   const [panelOpen, setPanelOpen] = useState(true);
-  const [ride, setRide] = useState({});
-  const [captainLocation, setCaptainLocation] = useState([22.505, 88.09]);
+  const [ride, setRide] = useState(null);
+  // const [captainLocation, setCaptainLocation] = useState([22.500, 88.08]);
+  const [userLocation, setUserLocation] = useState([22.505, 88.09]);
+  const [destinationLocation, setDestinationLocation] = useState([22.505, 88.09]);
   const [eta, setEta] = useState("Calculating...");
+  const { recieveMessage } = useContext(SocketContext);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation([latitude, longitude]);
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+        },
+        {
+          enableHighAccuracy: true, // Improves accuracy
+          timeout: 10000, // Wait 10 seconds before error
+          maximumAge: 0, // No caching, always fetch fresh location
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
+  // Function to get user's real-time location
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation([latitude, longitude]);
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+        },
+        {
+          enableHighAccuracy: true, // Improves accuracy
+          timeout: 10000, // Wait 10 seconds before error
+          maximumAge: 0, // No caching, always fetch fresh location
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  };
+
+  // Fetch user location every 10 seconds
+  useEffect(() => {
+    getUserLocation();
+
+    const interval = setInterval(() => {
+      getUserLocation();
+    }, 10000); // Updates every 10 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
 
   useEffect(() => {
     // Fetch ride details using rideId
@@ -22,9 +95,9 @@ function UserRiding() {
           params: { rideId },
           withCredentials: true
         });
+        
         if (response.status === 200) {
           setRide(response.data);
-          setCaptainLocation([response.data?.captainLat || 22.505, response.data?.captainLng || 88.09]);
         }
       } catch (error) {
         console.error("Error fetching ride:", error);
@@ -32,6 +105,34 @@ function UserRiding() {
     };
 
     fetchRide();
+  }, []);
+
+  useEffect(() => {
+    const fetchDestinationCoords = async () => {
+      if(!ride) 
+        return;
+      
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/maps/get-coordinates`, {
+          params: { address: ride.destination },
+          withCredentials: true
+        });
+        if (response.status === 200) {
+          setDestinationLocation([response.data?.lat || 22.505, response.data?.lon || 88.09]);
+        }
+      } catch (error) {
+        console.error("Error fetching destination:", error);
+      }
+  };
+
+  fetchDestinationCoords();
+  }, [ride]);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    recieveMessage("ride-ended", () => {
+      navigate("/home");
+    });
   }, []);
 
   // Function to toggle bottom panel
@@ -44,17 +145,28 @@ function UserRiding() {
         {/* Map Section (Left 2/3) */}
         <div className="w-2/3">
           <MapContainer
-            center={captainLocation}
-            zoom={13}
+            center={userLocation}
+            zoom={10}
             className="h-screen w-full"
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
             />
-            <Marker position={captainLocation}>
-              <Popup>Captain's Location</Popup>
+            {/* User's Location Marker */}
+            <Marker position={userLocation} icon={userIcon}>
+              <Popup>You are here</Popup>
             </Marker>
+
+            {/* Destination Location Marker */}
+            <Marker position={destinationLocation} icon={captainIcon}>
+              <Popup>Destination</Popup>
+            </Marker>
+
+            {/* Captain's Location Marker */}
+            {/* <Marker position={captainLocation} icon={captainIcon}>
+              <Popup>Captain's Location</Popup>
+            </Marker> */}
           </MapContainer>
         </div>
 
@@ -113,25 +225,35 @@ function UserRiding() {
       <div className="lg:hidden relative h-screen w-full">
         {/* Map Section */}
         <MapContainer
-          center={captainLocation}
-          zoom={13}
-          className="h-screen w-full"
-          style={{ zIndex: 1 }}
+          center={userLocation}
+          zoom={10}
+          className="h-screen w-full z-0"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
           />
-          <Marker position={captainLocation}>
-            <Popup>Captain's Location</Popup>
+          {/* User's Location Marker */}
+          <Marker position={userLocation} icon={userIcon}>
+            <Popup>You are here</Popup>
           </Marker>
+
+          {/* Destination Location Marker */}
+          <Marker position={destinationLocation} icon={captainIcon}>
+            <Popup>Destination</Popup>
+          </Marker>
+
+          {/* Captain's Location Marker */}
+          {/* <Marker position={captainLocation} icon={captainIcon}>
+            <Popup>Captain's Location</Popup>
+          </Marker> */}
         </MapContainer>
 
         {/* Bottom Panel for Mobile */}
         <motion.div
           className={`absolute bottom-0 w-full bg-gradient-to-r from-[#1E3A8A] to-[#9333EA] text-white p-4 
                     ${panelOpen ? "h-[60%]" : "h-16"} overflow-y-auto rounded-t-2xl shadow-lg`}
-          style={{ zIndex: 50 }}
+          style={{ zIndex: 1000 }}
           initial={{ y: "100%" }}
           animate={{ y: panelOpen ? "0%" : "calc(100% - 4rem)" }}
           transition={{ type: "spring", stiffness: 50 }}

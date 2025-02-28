@@ -5,6 +5,7 @@ import CaptainNavbar from "../captain-components/Captain_Navbar";
 import RideRequest from "../captain-components/RideRequest";
 import { CaptainDataContext } from "../context/captainContext";
 import { SocketContext } from "../context/socketContext";
+import { use } from "react";
 
 const CaptainHome = () => {
 
@@ -48,10 +49,18 @@ const CaptainHome = () => {
     return () => clearInterval(intervalId);
   }, [rideRequestsshow, captain?.email]); // Depend on rideRequestsshow & captain.email
 
+  useEffect(() => {
+    const check = async () => {
+      if(localStorage.getItem("captainOnline") === 'true') {
+        setRideRequestsshow(true);
+      }
+    }
+    check();
+  }, []);
 
   const handleGoOnline = () => {
+    localStorage.setItem("captainOnline", true);
     setRideRequestsshow(true);
-
   };
 
   return (

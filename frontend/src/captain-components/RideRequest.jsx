@@ -87,7 +87,7 @@ function RideRequest() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.6 }}>
                                     {/* User Info */}
-                                    <div className="flex items-center justify-between md:flex-col md:items-center lg:justify-end lg:order-2 lg:mb-0 mb-4">
+                                    <div className="flex items-center justify-between md:flex-col md:items-center lg:justify-end lg:order-2 lg:mb-0 mb-4 w-full">
                                         {/* Image & Username - Flex on Small Screens, Stacked on Large Screens */}
                                         <div className="flex items-center md:flex-col md:items-center">
                                             <img

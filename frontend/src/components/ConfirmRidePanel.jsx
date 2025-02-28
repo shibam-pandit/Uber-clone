@@ -43,6 +43,8 @@ function ConfirmRidePanel(props) {
 
     useEffect(() => {
         const handleRideRequest = async (rideData) => {
+            console.log("Received ride request:", rideData);
+
             setAcceptedCaptain(rideData);
             setRideInfoShow(true);
         };

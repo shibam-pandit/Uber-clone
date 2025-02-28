@@ -71,6 +71,16 @@ export const createRide = async (userId, pickup, destination, vehicleType, fare)
     return ride.rows[0]; // Returns the newly created ride
 };
 
+export const confirmRide = async (captainId, rideId) => {
+    console.log("Confirming ride for captain", captainId, "ride", rideId);
+    
+    const result = await db.query(
+        "UPDATE ride SET captainid = $1 WHERE id = $2 RETURNING *",
+        [captainId, rideId]
+    );
+    return result.rows[0]; // Return the confirmed ride record
+};
+
 export const getRideById = async (rideId) => {
     if(!rideId) {
         throw new Error("Please provide a valid ride ID.");
@@ -81,3 +91,17 @@ export const getRideById = async (rideId) => {
 
     return ride.rows[0]; // Returns the ride details
 };
+
+export const statusUpdate = async (rideId, status) => {
+    if(!rideId || !status) {
+        throw new Error("Please provide both ride ID and status.");
+    }
+
+    // Update ride status in the database
+    const ride = await db.query(
+        "UPDATE ride SET status = $1 WHERE id = $2 RETURNING *",
+        [status, rideId]
+    );
+
+    return ride.rows[0]; // Returns the updated ride details
+}

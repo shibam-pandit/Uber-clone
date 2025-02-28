@@ -1,8 +1,6 @@
 import { validationResult } from "express-validator";
 import { generateAuthToken, comparePassword, hashPassword, blackListingToken } from "../services/auth.services.js";
-import { findCaptainByEmail, createCaptain, confirmRide, findVehicleByCaptainId } from "../services/captain.services.js";
-import { sendMessageToSocketId } from "../socket.js";
-import { getUserSocketId } from "../services/user.services.js";
+import { findCaptainByEmail, createCaptain } from "../services/captain.services.js";
 
 export const registerCaptain = async (req, res) => {
 
@@ -92,51 +90,3 @@ export const getCaptainProfile = async (req, res) => {
   const { password, ...captainWithoutPassword } = req.captain; // Destructure to exclude the password
   res.status(200).json({ user: captainWithoutPassword });
 };
-
-export const confirmRideController = async (req, res) => {
-  const { rideId, userId, distance } = req.body;
-  if (!rideId) {
-    return res.status(400).json({ message: "user Id of the ride is required" });
-  }
-  const captainId = req.captain.id;
-
-  try {
-    const ride = await confirmRide(captainId, rideId);
-    res.status(200).json(ride);
-
-    (async () => {
-      try {
-        const user_socket_id = await getUserSocketId(userId);
-        if (!user_socket_id) {
-          console.log("⚠️ No active socket found for user ID:", userId);
-      }
-        const captain_vehicle = await findVehicleByCaptainId(captainId);
-        
-        sendMessageToSocketId(user_socket_id.socket_id, {
-          type: "ride-confirmed",
-          payload: {
-            captain: {
-              firstname: req.captain.firstname,
-              lastname: req.captain.lastname
-            },
-            vehicle: {
-              color: captain_vehicle.color,
-              plate: captain_vehicle.plate,
-              capacity: captain_vehicle.capacity,
-              vehicleType: captain_vehicle.vehicle_type
-            },
-            distance: distance,
-            otp: ride.otp,
-            rideId: ride.id
-          }
-        });
-      } catch(error) {
-        console.log("Error in sending ride requests to captains", error);
-      }
-    })();
-
-  } catch (error) {
-    console.error("Error confirming ride:", error);
-    res.status(500).json({ message: "Error confirming ride" });
-  }
-}

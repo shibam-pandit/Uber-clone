@@ -35,6 +35,7 @@ const OTPInput = ({ rideId, onSuccess }) => {
             });
 
             if (response.status === 200) {
+                localStorage.setItem("otpVerified", true);
                 onSuccess();
             }
         } catch (error) {

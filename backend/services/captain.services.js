@@ -120,13 +120,3 @@ export const findNearbyCaptains = async (lat, lon, radius = 10) => {
     const result = await db.query(query, [lat, lon, radius]);
     return result.rows; // Returns list of nearby captains
 };
-
-export const confirmRide = async (captainId, rideId) => {
-    console.log("Confirming ride for captain", captainId, "ride", rideId);
-    
-    const result = await db.query(
-        "UPDATE ride SET captainid = $1 WHERE id = $2 RETURNING *",
-        [captainId, rideId]
-    );
-    return result.rows[0]; // Return the confirmed ride record
-};
