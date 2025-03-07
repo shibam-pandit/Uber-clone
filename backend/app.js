@@ -15,7 +15,18 @@ const app = express();
 connectToDB();
 
 // Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // Frontend running locally (Vite default)
+      "https://uberclone-roan.vercel.app", // Deployed frontend on Vercel
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true, // Allows cookies and authentication
+    allowedHeaders: "Content-Type,Authorization",
+  })
+);
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json()); // This will correctly parse JSON bodies
 app.use(cookieParser());
