@@ -15,12 +15,7 @@ const app = express();
 connectToDB();
 
 // Middlewares
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL, // Replace with your frontend's production URL
-    credentials: true, // Allow cookies/credentials
-  })
-);
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json()); // This will correctly parse JSON bodies
 app.use(cookieParser());
