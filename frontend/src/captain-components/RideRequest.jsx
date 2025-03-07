@@ -8,24 +8,7 @@ function RideRequest() {
   const [currentRide, setCurrentRide] = useState(null)
 
   // Simulate receiving ride requests
-  const [Requests, setRequests] = useState([
-    {
-      id: 101,
-      userName: "John Doe",
-      pickup: "123 Main St",
-      drop: "456 Elm St",
-      fare: "15",
-      distance: 2,
-    },
-    {
-      id: 102,
-      userName: "Alice Smith",
-      pickup: "789 Oak St",
-      drop: "321 Pine St",
-      fare: "20",
-      distance: 3,
-    },
-  ])
+  const [Requests, setRequests] = useState([])
 
   const { recieveMessage } = useContext(SocketContext)
 
