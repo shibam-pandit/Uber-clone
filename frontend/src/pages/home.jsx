@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion'; // for smooth animations
-import { UserDataContext } from '../context/UserContext';
+import { UserDataContext } from '../context/userContext';
 import Navbar from '../components/Navbar';
 // import Footer from '../components/Footer';
 import LocationSearchPanel from '../components/LocationSearchPanel';
