@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const Navbar = () => {
+const Navbar = (props) => {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState('/home');
+  const [activeLink, setActiveLink] = useState(props.currentPath);
 
   const handleLinkClick = (path) => {
     setActiveLink(path);
@@ -18,6 +18,7 @@ const Navbar = () => {
   return (
     <nav className="top-0 z-30 w-full bg-[#dfa674] shadow-lg py-1">
       <div className="container mx-auto flex items-center justify-between px-6 md:px-12 max-h-16">
+        {/* Logo - Left side */}
         <Link to="/" className="flex items-center">
           <img
             src="https://www.svgrepo.com/show/303453/uber-12-logo.svg"
@@ -25,6 +26,8 @@ const Navbar = () => {
             className="h-14 object-cover left-3"
           />
         </Link>
+
+        {/* Mobile menu button */}
         <div className="relative lg:hidden">
           <button
             onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
@@ -80,34 +83,16 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    to="/company"
-                    onClick={() => handleLinkClick('/company')}
-                    className={`${linkStyle('/company')} block`}
+                    to="/about?requestFrom=home"
+                    onClick={() => handleLinkClick('/about')}
+                    className={`${linkStyle('/about')} block`}
                   >
-                    Company
+                    About
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/marketplace"
-                    onClick={() => handleLinkClick('/marketplace')}
-                    className={`${linkStyle('/marketplace')} block`}
-                  >
-                    Marketplace
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/features"
-                    onClick={() => handleLinkClick('/features')}
-                    className={`${linkStyle('/features')} block`}
-                  >
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/contact"
+                    to="/contact?requestFrom=home"
                     onClick={() => handleLinkClick('/contact')}
                     className={`${linkStyle('/contact')} block`}
                   >
@@ -116,77 +101,76 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    to="/logout"
-                    onClick={() => handleLinkClick('/logout')}
-                    className={`${linkStyle('/logout')} block text-red-600 font-semibold hover:bg-red-600`}
+                    to="/profile"
+                    onClick={() => handleLinkClick('/profile')}
+                    className={`${linkStyle('/profile')} block`}
                   >
-                    Logout
+                    Profile
                   </Link>
                 </li>
               </ul>
             </div>
           )}
         </div>
-        <div
-          className="hidden lg:flex lg:w-auto items-center justify-between"
-          id="desktop-menu"
-        >
-          <ul className="flex flex-row space-x-3">
-            <li>
-              <Link
-                to="/home"
-                onClick={() => handleLinkClick('/home')}
-                className={linkStyle('/home')}
+        
+        {/* Desktop Menu - Middle and Right side */}
+        <div className="hidden lg:flex lg:flex-1 lg:justify-between items-center">
+          {/* Center navigation links */}
+          <div className="flex-1"></div>
+          <div className="flex justify-center flex-1">
+            <ul className="flex flex-row space-x-3">
+              <li>
+                <Link
+                  to="/home"
+                  onClick={() => handleLinkClick('/home')}
+                  className={linkStyle('/home')}
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about?requestFrom=home"
+                  onClick={() => handleLinkClick('/about')}
+                  className={linkStyle('/about')}
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact?requestFrom=home"
+                  onClick={() => handleLinkClick('/contact')}
+                  className={linkStyle('/contact')}
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+          
+          {/* Profile icon - Right side */}
+          <div className="flex justify-end flex-1">
+            <Link
+              to="/profile"
+              onClick={() => handleLinkClick('/profile')}
+              className={`p-2 rounded-full ${activeLink === '/profile' ? 'bg-blue-900 text-white' : 'text-gray-900 hover:bg-blue-400 hover:text-white'}`}
+              title="Profile"
+            >
+              <svg 
+                className="w-6 h-6" 
+                fill="currentColor" 
+                viewBox="0 0 20 20" 
+                xmlns="http://www.w3.org/2000/svg"
               >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/company"
-                onClick={() => handleLinkClick('/company')}
-                className={linkStyle('/company')}
-              >
-                Company
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/marketplace"
-                onClick={() => handleLinkClick('/marketplace')}
-                className={linkStyle('/marketplace')}
-              >
-                Marketplace
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/features"
-                onClick={() => handleLinkClick('/features')}
-                className={linkStyle('/features')}
-              >
-                Features
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/contact"
-                onClick={() => handleLinkClick('/contact')}
-                className={linkStyle('/contact')}
-              >
-                Contact
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/logout"
-                onClick={() => handleLinkClick('/logout')}
-                className={`${linkStyle('/logout')} text-red-600 font-semibold hover:bg-red-600`}
-              >
-                Logout
-              </Link>
-            </li>
-          </ul>
+                <path 
+                  fillRule="evenodd" 
+                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" 
+                  clipRule="evenodd" 
+                />
+              </svg>
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

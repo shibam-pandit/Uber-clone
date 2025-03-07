@@ -13,6 +13,10 @@ import CaptainHome from "./pages/captain_home";
 import CaptainRiding from "./pages/CaptainRiding";
 import CaptainProtectWrapper from "./pages/CaptainProtectWrapper";
 import Riding from "./pages/Riding";
+import UserProfile from "./pages/User_profile";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
+import CaptainProfile from "./pages/Captain-Profile";
 
 function App() {
   return (
@@ -65,6 +69,24 @@ function App() {
             </CaptainProtectWrapper>
           }
         />
+
+        <Route path="/profile"
+          element={
+            <UserProtectWrapper>
+              <UserProfile />
+            </UserProtectWrapper>
+          }
+        />
+        <Route path="/captain-profile"
+          element={
+            <CaptainProtectWrapper>
+              <CaptainProfile />
+            </CaptainProtectWrapper>
+          }
+        />
+
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </div>
   );

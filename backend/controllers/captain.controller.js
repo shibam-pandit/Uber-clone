@@ -1,6 +1,6 @@
 import { validationResult } from "express-validator";
 import { generateAuthToken, comparePassword, hashPassword, blackListingToken } from "../services/auth.services.js";
-import { findCaptainByEmail, createCaptain } from "../services/captain.services.js";
+import { findCaptainByEmail, createCaptain, pastRides, findVehicleByCaptainId } from "../services/captain.services.js";
 
 export const registerCaptain = async (req, res) => {
 
@@ -90,3 +90,23 @@ export const getCaptainProfile = async (req, res) => {
   const { password, ...captainWithoutPassword } = req.captain; // Destructure to exclude the password
   res.status(200).json({ user: captainWithoutPassword });
 };
+
+export const getPastRides = async (req, res) => {
+  try {
+    const rides = await pastRides(req.captain.id);
+    res.status(200).json(rides);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error.");
+  }
+};
+
+export const getVehicleInfo = async (req, res) => {
+  try {
+    const vehicle = await findVehicleByCaptainId(req.captain.id);
+    res.status(200).json(vehicle);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error.");
+  }
+}

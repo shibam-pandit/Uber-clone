@@ -120,3 +120,11 @@ export const findNearbyCaptains = async (lat, lon, radius = 10) => {
     const result = await db.query(query, [lat, lon, radius]);
     return result.rows; // Returns list of nearby captains
 };
+
+export const pastRides = async (captainId) => {
+    const result = await db.query(
+        "SELECT * FROM ride WHERE captainid = $1",
+        [captainId]
+    );
+    return result.rows; 
+};

@@ -47,7 +47,7 @@ const Home = () => {
 
     return (
         <div>
-            <Navbar />
+            <Navbar currentPath="/home" />
             <div className="relative min-h-screen bg-[#f2e9db]">
                 {/* Large Screen Layout */}
                 <div className="hidden lg:flex min-h-screen">

@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { hashPassword, comparePassword, generateAuthToken, blackListingToken } from "../services/auth.services.js";
-import { createUser, findUserByEmail } from "../services/user.services.js";
+import { createUser, findUserByEmail, pastRides } from "../services/user.services.js";
 import { validationResult } from "express-validator";
 
 export const registerUser = async (req, res) => {
@@ -92,3 +92,13 @@ export const getUserProfile = async (req, res) => {
   const { password, ...userWithoutPassword } = req.user; // Destructure to exclude the password
   res.status(200).json({ user: userWithoutPassword });
 };
+
+export const getPastRides = async (req, res) => {
+  try {
+    const rides = await pastRides(req.user.id);
+    res.status(200).json(rides);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error.");
+  }
+}

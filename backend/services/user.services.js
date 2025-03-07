@@ -36,3 +36,8 @@ export const getUserSocketId = async (id) => {
     const result = await db.query("SELECT socket_id FROM users WHERE id = $1", [id]);
     return result.rows[0];
 };
+
+export const pastRides = async (id) => {
+    const result = await db.query("SELECT * FROM ride WHERE userid = $1", [id]);
+    return result.rows;
+};

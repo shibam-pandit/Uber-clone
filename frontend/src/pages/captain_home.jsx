@@ -65,8 +65,7 @@ const CaptainHome = () => {
 
   return (
     <div className="min-h-screen bg-[#f2e9db] font-sans">
-      {/* Navbar */}
-      <CaptainNavbar />
+      <CaptainNavbar currentPath="/home" />
 
       {/* Main Content */}
       <div className="relative container mx-auto py-20 px-6 md:px-12">
